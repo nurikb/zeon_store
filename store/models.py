@@ -1,23 +1,15 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 
-from slugify import slugify
+from uuslug import slugify
 
 
-class Category(models.Model):
-     name = models.CharField(max_length=100)
-     slug = models.SlugField(unique=True)
-
-     def save(self, *args, **kwargs):
-          self.slug = slugify(self.name)
-          super(Product, self).save(*args, **kwargs)
-
-     def __str__(self):
-          return self.name
+User = get_user_model()
 
 
 class Collection(models.Model):
      name = models.CharField(max_length=100)
-     slug = models.SlugField(unique=True)
+     slug = models.SlugField(unique=True, null=True, blank=True)
 
      def save(self, *args, **kwargs):
           self.slug = slugify(self.name)
@@ -29,12 +21,17 @@ class Collection(models.Model):
 
 class Product(models.Model):
      name = models.CharField(max_length=100)
-     price = models.DecimalField(max_digits=6, decimal_places=3)
+     price = models.DecimalField(max_digits=6, decimal_places=0)
      created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
      modified_at = models.DateTimeField(auto_now=True, verbose_name='Дата редактирования')
      slug = models.SlugField(unique=True)
-     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='Категория')
-     collection = models.ForeignKey(Collection, on_delete=models.DO_NOTHING, null=True, verbose_name='Коллекция')
+     collection = models.ForeignKey(
+          Collection,
+          on_delete=models.DO_NOTHING,
+          null=True,
+          verbose_name='Коллекция',
+          related_name='collection'
+     )
 
      def save(self, *args, **kwargs):
           self.slug = slugify(self.name)
@@ -55,8 +52,9 @@ class Order(models.Model):
 
 
 class OrderDetail(models.Model):
-     order = models.ForeignKey(Order, on_delete=models.CASCADE)
-     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_detail')
+     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='order_product')
      quantity = models.IntegerField()
      total_price = models.DecimalField(max_digits=6, decimal_places=3)
      created_at = models.DateTimeField(auto_now_add=True)
