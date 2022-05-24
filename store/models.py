@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from ckeditor_uploader.fields import RichTextUploadingField
 
 from uuslug import slugify
 
@@ -25,13 +26,15 @@ class Product(models.Model):
      created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
      modified_at = models.DateTimeField(auto_now=True, verbose_name='Дата редактирования')
      slug = models.SlugField(unique=True)
-     collection = models.ForeignKey(
-          Collection,
-          on_delete=models.DO_NOTHING,
-          null=True,
+     collection = models.ManyToManyField(
+          to=Collection,
           verbose_name='Коллекция',
           related_name='collection'
      )
+     quantity = models.IntegerField(null=True)
+     size = models.CharField(max_length=10, null=True)
+     substance = models.CharField(max_length=25, null=True)
+     about_text = RichTextUploadingField('Описание товара', null=True, blank=True)
 
      def save(self, *args, **kwargs):
           self.slug = slugify(self.name)
@@ -61,7 +64,8 @@ class OrderDetail(models.Model):
      modified_at = models.DateTimeField(auto_now=True)
      
 
-
+# class AboutUs(models.Model):
+#      text =
 
 
 

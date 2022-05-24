@@ -12,6 +12,9 @@ class ProductFormAdmin(admin.ModelAdmin):
             'name',
             'price',
             'collection',
+            'size',
+            'quantity',
+            'about_text'
         )}),
     )
     readonly_fields = ('created_at', 'modified_at',)
