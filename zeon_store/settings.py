@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'ckeditor_uploader',
     'ckeditor',
+    'rest_framework.authtoken',
+    'djoser',
+    'colorfield',
 
     'store',
 ]
@@ -124,7 +127,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
@@ -136,7 +146,6 @@ CKEDITOR_CONFIGS = {
     'default': {
         'skin': 'moono',
         # 'skin': 'office2013',
-        'autoParagraph': False,
         'toolbar_Basic': [
             ['Source', '-', 'Bold', 'Italic']
         ],
@@ -171,9 +180,16 @@ CKEDITOR_CONFIGS = {
             ]},
         ],
         'toolbar': 'YourCustomToolbarConfig',  # put selected toolbar config here
+        # 'toolbarGroups': [{ 'name': 'document', 'groups': [ 'mode', 'document', 'doctools' ] }],
+        # 'height': 291,
+        # 'width': '100%',
+        # 'filebrowserWindowHeight': 725,
+        # 'filebrowserWindowWidth': 940,
+        # 'toolbarCanCollapse': True,
+        # 'mathJaxLib': '//cdn.mathjax.org/mathjax/2.2-latest/MathJax.js?config=TeX-AMS_HTML',
         'tabSpaces': 4,
         'extraPlugins': ','.join([
-            'uploadimage',  # the upload image feature
+            'uploadimage', # the upload image feature
             # your extra plugins here
             'div',
             'autolink',
@@ -188,64 +204,6 @@ CKEDITOR_CONFIGS = {
             'dialogui',
             'elementspath'
         ]),
-    },
-    'simple': {
-        'autoParagraph': False,
-        'toolbar': [
-            ['Bold', 'Italic', 'Underline'],
-            ['BulletedList', 'NumberedList'],
-            ['Link', 'Unlink'],
-            ['TextColor', ],
-            ['Styles', 'Format', 'Font', 'FontSize', 'RemoveFormat'],
-        ],
-    },
-    'basic_text': {
-        'autoParagraph': False,
-        'toolbar': [
-            ['Source', 'Bold', 'Italic']
-        ]
-    },
-    'text_with_size': {
-        'autoParagraph': False,
-        'toolbar': [
-            ['Source', 'Bold', 'Italic', 'FontSize']
-        ]
-    },
-    'text_color': {
-        'autoParagraph': False,
-        'toolbar': [
-            ['Bold', 'Italic', 'Underline', 'TextColor', 'Font', 'FontSize', 'Source', ],
-        ],
-    },
-    'text_with_color': {
-        'autoParagraph': False,
-        'toolbar': [
-            ['Bold', 'Italic', 'Underline', 'TextColor', 'Source', ],
-        ],
-    },
-    'text_with_size_and_color': {
-        'autoParagraph': False,
-        'toolbar': [
-            ['Bold', 'Italic', 'Underline', 'TextColor', 'FontSize', 'Source', ],
-        ],
-    },
-    'iframe': {
-        'autoParagraph': False,
-        'toolbar': [
-            "iframe",
-            "iframedialog",
-        ],
-    },
-    'modal': {
-        'autoParagraph': False,
-        'toolbar': [
-            ['Bold', 'Italic', 'Underline'],
-            ['BulletedList'],
-            ['Link', 'Unlink'],
-            ['TextColor',  'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
-            ['Styles', 'Format', 'Font', 'FontSize', 'RemoveFormat', ],
-            ['Table', 'Preview', 'Image']
-        ],
-    },
+    }
 }
 

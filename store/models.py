@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from ckeditor_uploader.fields import RichTextUploadingField
 
+from colorfield.fields import ColorField
+from ckeditor_uploader.fields import RichTextUploadingField
 from uuslug import slugify
 
 
@@ -10,6 +11,7 @@ User = get_user_model()
 
 class Collection(models.Model):
      name = models.CharField(max_length=100)
+     image = models.ImageField(default=None)
      slug = models.SlugField(unique=True, null=True, blank=True)
 
      def save(self, *args, **kwargs):
@@ -20,21 +22,35 @@ class Collection(models.Model):
           return self.name
 
 
+class Image(models.Model):
+     image = models.ImageField(null=True, blank=True)
+     color = ColorField()
+
+     def __str__(self):
+          return f'{self.color}_{self.image}'
+
+
 class Product(models.Model):
      name = models.CharField(max_length=100)
-     price = models.DecimalField(max_digits=6, decimal_places=0)
-     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
-     modified_at = models.DateTimeField(auto_now=True, verbose_name='Дата редактирования')
-     slug = models.SlugField(unique=True)
+     price = models.IntegerField()
+     article = models.CharField(max_length=100, null=True)
+     discount_price = models.IntegerField(null=True)
+     discount_percent = models.IntegerField(null=True)
+     slug = models.SlugField(unique=True, null=True, blank=True)
      collection = models.ManyToManyField(
           to=Collection,
           verbose_name='Коллекция',
           related_name='collection'
      )
-     quantity = models.IntegerField(null=True)
+     quantity = models.IntegerField(null=True, verbose_name='количество')
      size = models.CharField(max_length=10, null=True)
-     substance = models.CharField(max_length=25, null=True)
+     substance = models.CharField(max_length=25, null=True, verbose_name='Состав ткани')
+     material = models.CharField(max_length=100, null=True)
      about_text = RichTextUploadingField('Описание товара', null=True, blank=True)
+     image = models.ManyToManyField(to=Image, related_name='product_image', null=True)
+     color = models.CharField(max_length=255, verbose_name='цвет', null=True)
+     top_sales = models.BooleanField(default=False)
+     new = models.BooleanField(default=True)
 
      def save(self, *args, **kwargs):
           self.slug = slugify(self.name)

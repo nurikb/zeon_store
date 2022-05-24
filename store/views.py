@@ -14,7 +14,12 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 class CollectionViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API
     """
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
+
+
+# class TopSales(viewsets.ModelViewSet):
+#     queryset = Product.
+

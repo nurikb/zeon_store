@@ -13,12 +13,16 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.contrib import admin
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('api/', include('store.urls')),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
-]
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('api/auth/', include('djoser.urls')),
+    re_path(r'^auth/', include('djoser.urls.authtoken')),
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
