@@ -5,30 +5,35 @@ from store.models import Product, Collection, Order, OrderDetail, Image
 from store.forms import ProductForm, ImageForm
 
 
+class ImageTableInline(admin.StackedInline):
+    model = Image
+    fields = ('image', 'color',)
+
+
 class ProductFormAdmin(admin.ModelAdmin):
     form = ProductForm
+    inlines = (ImageTableInline,)
     fieldsets = (
         (_('Основные'), {'fields': (
-            'name',
-            'price',
-            'color',
-            'image',
             'collection',
+            'name',
+            'article',
+            'price',
+            'discount_price',
+            'discount_percent',
+            'about_text',
             'size',
+            'substance',
             'quantity',
-            'about_text'
+            'material',
+
+
         )}),
     )
     search_fields = ('name', 'category')
 
 
-class ImageFormAdmin(admin.ModelAdmin):
-    form = ImageForm
-    fields = ('image', 'color')
-
-
-admin.site.register(Order)
-admin.site.register(Image, ImageFormAdmin)
-admin.site.register(OrderDetail)
+# admin.site.register(Order)
+# admin.site.register(OrderDetail)
 admin.site.register(Collection)
 admin.site.register(Product, ProductFormAdmin)

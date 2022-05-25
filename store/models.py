@@ -25,6 +25,7 @@ class Collection(models.Model):
 class Image(models.Model):
      image = models.ImageField(null=True, blank=True)
      color = ColorField()
+     product = models.ForeignKey("Product", on_delete=models.CASCADE, null=True)
 
      def __str__(self):
           return f'{self.color}_{self.image}'
@@ -37,17 +38,18 @@ class Product(models.Model):
      discount_price = models.IntegerField(null=True)
      discount_percent = models.IntegerField(null=True)
      slug = models.SlugField(unique=True, null=True, blank=True)
-     collection = models.ManyToManyField(
-          to=Collection,
+     collection = models.ForeignKey(
+          Collection,
+          on_delete=models.CASCADE,
           verbose_name='Коллекция',
-          related_name='collection'
+          related_name='collection',
+          null=True
      )
      quantity = models.IntegerField(null=True, verbose_name='количество')
      size = models.CharField(max_length=10, null=True)
      substance = models.CharField(max_length=25, null=True, verbose_name='Состав ткани')
      material = models.CharField(max_length=100, null=True)
      about_text = RichTextUploadingField('Описание товара', null=True, blank=True)
-     image = models.ManyToManyField(to=Image, related_name='product_image', null=True)
      color = models.CharField(max_length=255, verbose_name='цвет', null=True)
      top_sales = models.BooleanField(default=False)
      new = models.BooleanField(default=True)
