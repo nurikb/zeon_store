@@ -164,4 +164,13 @@ class Advantage(models.Model):
           return self.title
 
 
+class Slider(models.Model):
+     class Meta:
+          verbose_name_plural = 'Слайдер '
+          verbose_name = 'Слайдер'
+
+     image = models.ImageField()
+     link = models.CharField(max_length=150, null=True)
+
+
 

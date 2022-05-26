@@ -1,7 +1,7 @@
 from django.utils.translation import gettext_lazy as _
 from django.contrib import admin
 
-from store.models import Product, Collection, News, Image, AboutUsImage, AboutUs, Help, PublicOffer, Advantage
+from store.models import Product, Collection, News, Image, AboutUsImage, AboutUs, Help, PublicOffer, Advantage, Slider
 from store.forms import ProductForm, SvgImageForm
 
 
@@ -55,6 +55,7 @@ class AdvantageFormAdmin(admin.ModelAdmin):
 admin.site.register(AboutUs, AboutUsFormAdmin)
 admin.site.register(Advantage, AdvantageFormAdmin)
 admin.site.register(Product, ProductFormAdmin)
+admin.site.register(Slider)
 admin.site.register(News)
 admin.site.register(Help)
 admin.site.register(Collection)

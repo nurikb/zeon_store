@@ -1,7 +1,10 @@
 from rest_framework import viewsets
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework import permissions
-from store.models import Product, Collection, News, AboutUs, Help, PublicOffer
-from store.serializers import ProductSerializer, CollectionSerializer, NewsSerializer, AboutUsSerializer, HelpSerializer, PublicOfferSerializer
+from store.models import Product, Collection, News, AboutUs, Help, PublicOffer, Slider
+from store.serializers import ProductSerializer, CollectionSerializer, NewsSerializer, AboutUsSerializer, HelpSerializer,\
+    PublicOfferSerializer, SliderSerializer
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -38,6 +41,13 @@ class HelpViewSet(viewsets.ModelViewSet):
 class PublicOfferViewSet(viewsets.ModelViewSet):
     queryset = PublicOffer.objects.all()
     serializer_class = PublicOfferSerializer
+
+
+class MainPageAPIView(APIView):
+    def get(self, request):
+        top_sales = Product.objects.filter(top_sales=False)[:5]
+
+        return Response({'top_sales': ProductSerializer(top_sales, many=True).data})
 
 
 

@@ -1,6 +1,6 @@
 from django.db.models import Q
 from rest_framework import serializers
-from store.models import Product, Collection, Image, News, AboutUs, AboutUsImage, Help, PublicOffer
+from store.models import Product, Collection, Image, News, AboutUs, AboutUsImage, Help, PublicOffer, Slider
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -44,6 +44,14 @@ class ProductSerializer(SimilarProductMixin):
     similar_product = serializers.SerializerMethodField('get_similar')
 
 
+class SimilarProductSerializer(SimilarProductMixin):
+    product_image = serializers.SerializerMethodField('get_image')
+
+    class Meta:
+        model = Product
+        fields = ('id', 'name', 'product_image', 'price', 'discount_price', 'discount_percent', 'size',)
+
+
 class NewsSerializer(serializers.ModelSerializer):
     class Meta:
         model =News
@@ -78,6 +86,12 @@ class HelpSerializer(serializers.ModelSerializer):
 class PublicOfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = PublicOffer
+        fields = '__all__'
+
+
+class SliderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Slider
         fields = '__all__'
 
 
