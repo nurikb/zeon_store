@@ -10,6 +10,11 @@ User = get_user_model()
 
 
 class Collection(models.Model):
+
+     class Meta:
+          verbose_name_plural = 'Коллекция'
+          verbose_name = 'Коллекция'
+
      name = models.CharField(max_length=100)
      image = models.ImageField(default=None)
      slug = models.SlugField(unique=True, null=True, blank=True)
@@ -32,6 +37,11 @@ class Image(models.Model):
 
 
 class Product(models.Model):
+
+     class Meta:
+          verbose_name_plural = 'Товары'
+          verbose_name = 'Товар'
+
      name = models.CharField(max_length=100)
      price = models.IntegerField()
      article = models.CharField(max_length=100, null=True)
@@ -80,10 +90,78 @@ class OrderDetail(models.Model):
      total_price = models.DecimalField(max_digits=6, decimal_places=3)
      created_at = models.DateTimeField(auto_now_add=True)
      modified_at = models.DateTimeField(auto_now=True)
-     
 
-# class AboutUs(models.Model):
-#      text =
+
+class AboutUsImage(models.Model):
+     image = models.ImageField(null=True, blank=True)
+     about_us = models.ForeignKey('AboutUs', on_delete=models.CASCADE, null=True)
+
+
+class AboutUs(models.Model):
+     class Meta:
+          verbose_name_plural = 'О нас'
+          verbose_name = 'О нас'
+
+     title = models.CharField(max_length=100)
+     text = RichTextUploadingField('Описание')
+
+     def __str__(self):
+          return self.title
+
+
+class News(models.Model):
+
+     class Meta:
+          verbose_name_plural = 'Новости'
+          verbose_name = 'Новости'
+
+     title = models.CharField(max_length=100)
+     image = models.ImageField()
+     text = RichTextUploadingField('Описание')
+
+     def __str__(self):
+          return self.title
+
+
+class Help(models.Model):
+
+     class Meta:
+          verbose_name_plural = 'Помощь'
+          verbose_name = 'Помощь'
+
+     question = models.TextField()
+     answer = models.TextField()
+     image = models.ImageField(null=True)
+
+     def __str__(self):
+          return self.question
+
+
+class PublicOffer(models.Model):
+
+     class Meta:
+          verbose_name_plural = 'Публичный оффер'
+          verbose_name = 'Публичный оффер'
+
+     title = models.CharField(max_length=100)
+     text = RichTextUploadingField('Описание')
+
+     def __str__(self):
+          return self.title
+
+
+class Advantage(models.Model):
+
+     class Meta:
+          verbose_name_plural = 'Наши преимущества'
+          verbose_name = 'Наши преимущества'
+
+     icon = models.ImageField()
+     title = models.CharField(max_length=100)
+     text = models.TextField()
+
+     def __str__(self):
+          return self.title
 
 
 

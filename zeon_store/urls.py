@@ -33,6 +33,3 @@ urlpatterns = [
     # path('api/auth/', include('djoser.urls')),
     # re_path(r'^auth/', include('djoser.urls.authtoken')),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-for i in urlpatterns:
-    print(i)

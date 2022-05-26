@@ -1,18 +1,25 @@
 from django.utils.translation import gettext_lazy as _
 from django.contrib import admin
 
-from store.models import Product, Collection, Order, OrderDetail, Image
-from store.forms import ProductForm, ImageForm
+from store.models import Product, Collection, News, Image, AboutUsImage, AboutUs, Help, PublicOffer, Advantage
+from store.forms import ProductForm, SvgImageForm
 
 
-class ImageTableInline(admin.StackedInline):
+class ProductImageInline(admin.StackedInline):
+    max_num = 8
     model = Image
     fields = ('image', 'color',)
 
 
+class AboutUsImageInline(admin.StackedInline):
+    max_num = 2
+    model = AboutUsImage
+    fields = ('image',)
+
+
 class ProductFormAdmin(admin.ModelAdmin):
     form = ProductForm
-    inlines = (ImageTableInline,)
+    inlines = (ProductImageInline,)
     fieldsets = (
         (_('Основные'), {'fields': (
             'collection',
@@ -33,7 +40,22 @@ class ProductFormAdmin(admin.ModelAdmin):
     search_fields = ('name', 'category')
 
 
-# admin.site.register(Order)
-# admin.site.register(OrderDetail)
-admin.site.register(Collection)
+class AboutUsFormAdmin(admin.ModelAdmin):
+    model = AboutUs
+    inlines = (AboutUsImageInline,)
+    list_display = ('title', 'text')
+
+
+class AdvantageFormAdmin(admin.ModelAdmin):
+    model = Advantage
+    form = SvgImageForm
+    fields = ('icon','title', 'text' )
+
+
+admin.site.register(AboutUs, AboutUsFormAdmin)
+admin.site.register(Advantage, AdvantageFormAdmin)
 admin.site.register(Product, ProductFormAdmin)
+admin.site.register(News)
+admin.site.register(Help)
+admin.site.register(Collection)
+admin.site.register(PublicOffer)
