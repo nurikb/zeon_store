@@ -45,7 +45,7 @@ class Product(models.Model):
      name = models.CharField(max_length=100)
      price = models.IntegerField()
      article = models.CharField(max_length=100, null=True)
-     discount_price = models.IntegerField(null=True)
+     discount_price = models.IntegerField(null=True, blank=True)
      discount_percent = models.IntegerField(null=True)
      slug = models.SlugField(unique=True, null=True, blank=True)
      collection = models.ForeignKey(
@@ -66,6 +66,8 @@ class Product(models.Model):
 
      def save(self, *args, **kwargs):
           self.slug = slugify(self.name)
+          if self.discount_percent:
+               self.discount_price = self.price - (self.price/100) * self.discount_percent
           super(Product, self).save(*args, **kwargs)
 
      def __str__(self):
@@ -126,15 +128,22 @@ class News(models.Model):
 class Help(models.Model):
 
      class Meta:
-          verbose_name_plural = 'Помощь'
-          verbose_name = 'Помощь'
+          verbose_name_plural = 'Вопросы и ответы'
+          verbose_name = 'Вопросы и ответы'
 
      question = models.TextField()
      answer = models.TextField()
-     image = models.ImageField(null=True)
 
      def __str__(self):
           return self.question
+
+
+class HelpImage(models.Model):
+
+     class Meta:
+          verbose_name_plural = 'Картинка для страницы "Помощь"'
+          verbose_name = 'Картинка для страницы "Помощь"'
+     image = models.ImageField()
 
 
 class PublicOffer(models.Model):

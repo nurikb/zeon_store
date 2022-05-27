@@ -12,10 +12,10 @@ class ProductImageSerializer(serializers.ModelSerializer):
 class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
-        fields = '__all__'
+        fields = ('id', 'image', 'name')
 
 
-class SimilarProductMixin(serializers.ModelSerializer):
+class SimilarProduct(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
@@ -25,13 +25,8 @@ class SimilarProductMixin(serializers.ModelSerializer):
         serializer = ProductImageSerializer(instance=image, many=True)
         return serializer.data
 
-    def get_similar(self, product):
-        similar_product = Product.objects.filter(Q(collection__id=product.collection.id) & ~Q(id=product.id))[:5]
-        serializer = SimilarProductSerializer(instance=similar_product, many=True)
-        return serializer.data
 
-
-class SimilarProductSerializer(SimilarProductMixin):
+class SimilarProductSerializer(SimilarProduct):
     product_image = serializers.SerializerMethodField('get_image')
 
     class Meta:
@@ -39,23 +34,14 @@ class SimilarProductSerializer(SimilarProductMixin):
         fields = ('id', 'name', 'product_image', 'price', 'discount_price', 'discount_percent', 'size',)
 
 
-class ProductSerializer(SimilarProductMixin):
+class ProductSerializer(SimilarProduct):
     product_image = serializers.SerializerMethodField('get_image')
-    similar_product = serializers.SerializerMethodField('get_similar')
-
-
-class SimilarProductSerializer(SimilarProductMixin):
-    product_image = serializers.SerializerMethodField('get_image')
-
-    class Meta:
-        model = Product
-        fields = ('id', 'name', 'product_image', 'price', 'discount_price', 'discount_percent', 'size',)
 
 
 class NewsSerializer(serializers.ModelSerializer):
     class Meta:
-        model =News
-        fields = '__all__'
+        model = News
+        fields = ('image', 'title', 'text')
 
 
 class AboutUsImageSerializer(serializers.ModelSerializer):
@@ -86,15 +72,11 @@ class HelpSerializer(serializers.ModelSerializer):
 class PublicOfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = PublicOffer
-        fields = '__all__'
+        fields = ('title', 'text')
 
 
 class SliderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Slider
         fields = '__all__'
-
-
-
-
 

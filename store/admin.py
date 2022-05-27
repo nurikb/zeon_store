@@ -1,7 +1,7 @@
 from django.utils.translation import gettext_lazy as _
 from django.contrib import admin
 
-from store.models import Product, Collection, News, Image, AboutUsImage, AboutUs, Help, PublicOffer, Advantage, Slider
+from store.models import Product, Collection, News, Image, AboutUsImage, AboutUs, Help, PublicOffer, Advantage, Slider, HelpImage
 from store.forms import ProductForm, SvgImageForm
 
 
@@ -49,7 +49,7 @@ class AboutUsFormAdmin(admin.ModelAdmin):
 class AdvantageFormAdmin(admin.ModelAdmin):
     model = Advantage
     form = SvgImageForm
-    fields = ('icon','title', 'text' )
+    fields = ('icon','title', 'text')
 
 
 admin.site.register(AboutUs, AboutUsFormAdmin)
@@ -58,5 +58,6 @@ admin.site.register(Product, ProductFormAdmin)
 admin.site.register(Slider)
 admin.site.register(News)
 admin.site.register(Help)
+admin.site.register(HelpImage)
 admin.site.register(Collection)
 admin.site.register(PublicOffer)
