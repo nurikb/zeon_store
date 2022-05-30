@@ -25,7 +25,7 @@ class CollectionAPIView(generics.ListAPIView):
 
 
 class APIListPagination(PageNumberPagination):
-    page_size = 12
+    page_size = 8
     page_size_query_param = 'page_size'
     max_page_size = 10
 
@@ -45,9 +45,10 @@ class CollectionProductsItem(generics.ListAPIView):
         new_product_ser = SimilarProductSerializer(new_product, many=True).data
 
         page = self.paginate_queryset(queryset)
+        test = self.paginate_queryset(new_product_ser)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response({'collection_product': serializer.data, 'new_product': new_product_ser})
+            return self.get_paginated_response({'collection_product': serializer.data, 'new_product': test})
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -75,11 +76,15 @@ class PublicOfferAPIView(APIView):
         return Response(p_offer_serializer)
 
 
-class MainPageAPIView(APIView):
-    def get(self, request):
-        top_sales = Product.objects.filter(top_sales=False)[:5]
+class MainPageTopSalesAPIView(generics.ListAPIView):
+    queryset = Product.objects.filter(top_sales=True)
+    serializer_class = SimilarProductSerializer
+    pagination_class = APIListPagination
 
-        return Response({'top_sales': ProductSerializer(top_sales, many=True).data})
 
+class MainPageNewAPIView(generics.ListAPIView):
+    queryset = Product.objects.filter(new=True)
+    serializer_class = SimilarProductSerializer
+    pagination_class = APIListPagination
 
 

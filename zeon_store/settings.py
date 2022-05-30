@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
 
     'store',
+    'cart',
 ]
 
 MIDDLEWARE = [
@@ -214,3 +215,4 @@ CKEDITOR_CONFIGS = {
     }
 }
 
+CART_SESSION_ID = 'cart'

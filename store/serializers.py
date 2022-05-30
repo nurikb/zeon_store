@@ -34,6 +34,18 @@ class SimilarProductSerializer(SimilarProduct):
         fields = ('id', 'name', 'product_image', 'price', 'discount_price', 'discount_percent', 'size',)
 
 
+class CartSerializer(SimilarProduct):
+    product_image = serializers.SerializerMethodField('get_image')
+    # quantity = serializers.SerializerMethodField('_get_quantity')
+
+    class Meta:
+        model = Product
+        fields = ('id', 'name', 'product_image', 'price', 'discount_price', 'discount_percent', 'size',)
+
+    def _get_quantity(self, obj):
+        return self.context.get('quantity')
+
+
 class ProductSerializer(SimilarProduct):
     product_image = serializers.SerializerMethodField('get_image')
 

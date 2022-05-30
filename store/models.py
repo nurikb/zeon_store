@@ -180,6 +180,3 @@ class Slider(models.Model):
 
      image = models.ImageField()
      link = models.CharField(max_length=150, null=True)
-
-
-
