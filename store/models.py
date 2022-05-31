@@ -126,23 +126,18 @@ class News(models.Model):
 
 
 class Help(models.Model):
-
-     class Meta:
-          verbose_name_plural = 'Вопросы и ответы'
-          verbose_name = 'Вопросы и ответы'
-
      question = models.TextField()
      answer = models.TextField()
+     image = models.ForeignKey('HelpImage', on_delete=models.DO_NOTHING, null=True)
 
      def __str__(self):
           return self.question
 
 
 class HelpImage(models.Model):
-
      class Meta:
-          verbose_name_plural = 'Картинка для страницы "Помощь"'
-          verbose_name = 'Картинка для страницы "Помощь"'
+          verbose_name_plural = 'Вопросы и ответы'
+          verbose_name = 'Вопросы и ответы'
      image = models.ImageField()
 
 
@@ -168,6 +163,7 @@ class Advantage(models.Model):
      icon = models.ImageField()
      title = models.CharField(max_length=100)
      text = models.TextField()
+     active = models.BooleanField(default=True)
 
      def __str__(self):
           return self.title
@@ -180,3 +176,22 @@ class Slider(models.Model):
 
      image = models.ImageField()
      link = models.CharField(max_length=150, null=True)
+     active = models.BooleanField(default=True)
+
+
+class CallBack(models.Model):
+     class Meta:
+          verbose_name_plural = 'Обратный звонок '
+          verbose_name = 'Обратный звонок'
+
+     name = models.CharField(max_length=100)
+     phone_number = models.CharField(max_length=100)
+     date = models.DateField(auto_now_add=True)
+     callback_type = models.CharField(max_length=100, null=True)
+     contacted = models.BooleanField(default=False)
+
+
+     def __str__(self):
+          if self.contacted:
+               return f'Связались'
+          return f'Не связались'

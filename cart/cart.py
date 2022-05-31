@@ -19,6 +19,7 @@ class Cart(object):
         product_id = str(product.id)
         if product_id not in self.cart:
             self.cart[product_id] = {'quantity': 0,
+                                     'color_quantity': {},
                                      'price': str(product.price),
                                      'discount_price': str(product.discount_price)}
         if update_quantity:
@@ -51,22 +52,28 @@ class Cart(object):
         for item in self.cart.values():
             item['price'] = Decimal(item['price'])
             item['total_price'] = item['price'] * item['quantity']
-            item['test'] = 3333
             yield item
 
-    # Количество товаро
+    # Количество товаров
     def __len__(self):
         return sum(item['quantity'] for item in self.cart.values())
 
     def get_total_price(self):
-        price = sum(Decimal(item['price'])*item['quantity'] for item in self.cart.values())
-        discount_price = sum(Decimal(item['discount_price'])*item['quantity'] for item in self.cart.values())
+        print(self.cart.values())
+        price = sum(int(item['price'])*int(item['quantity']) for item in self.cart.values())
+        discount_price = sum(int(item['discount_price'])*int(item['quantity']) for item in self.cart.values())
         return {'price': price, 'discount_price': discount_price}
 
     def get_full_cart(self):
         product_ids = self.cart.keys()
         product_list = Product.objects.filter(id__in=product_ids)
         return product_list
+
+    def get_product_count(self, product):
+        print(self.cart.values())
+        total_count = sum(item.quantity * int(p_quantity['quantity']) for item, p_quantity in zip(product, self.cart.values()))
+        product_quantity = sum(int(p_quantity['quantity']) for p_quantity in self.cart.values())
+        return {'total_count': total_count, 'product_quantity': product_quantity}
 
     def clear(self):
         del self.session[settings.CART_SESSION_ID]
