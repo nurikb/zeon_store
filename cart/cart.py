@@ -59,7 +59,6 @@ class Cart(object):
         return sum(item['quantity'] for item in self.cart.values())
 
     def get_total_price(self):
-        print(self.cart.values())
         price = sum(int(item['price'])*int(item['quantity']) for item in self.cart.values())
         discount_price = sum(int(item['discount_price'])*int(item['quantity']) for item in self.cart.values())
         return {'price': price, 'discount_price': discount_price}
@@ -70,7 +69,6 @@ class Cart(object):
         return product_list
 
     def get_product_count(self, product):
-        print(self.cart.values())
         total_count = sum(item.quantity * int(p_quantity['quantity']) for item, p_quantity in zip(product, self.cart.values()))
         product_quantity = sum(int(p_quantity['quantity']) for p_quantity in self.cart.values())
         return {'total_count': total_count, 'product_quantity': product_quantity}
