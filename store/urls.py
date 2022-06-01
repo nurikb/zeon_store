@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from store.views import (CollectionAPIView, NewsAPIView, AboutUsViewSet, HelpViewSet, PublicOfferAPIView,
                          MainPageTopSalesAPIView, ProductDetailAPIView, CollectionProductsItem, MainPageNewAPIView,
-                         CallBackAPIView, FavoriteProductAPIView)
+                         CallBackAPIView, FavoriteProductAPIView, SearchAPIView)
 
 router = DefaultRouter()
 
@@ -18,5 +18,6 @@ urlpatterns = [
     path('public-offer/', PublicOfferAPIView.as_view(), name='public_offer'),
     path('about-us/', AboutUsViewSet.as_view(), name='about_us'),
     path('help/', HelpViewSet.as_view(), name='help'),
-    path('callback/', CallBackAPIView.as_view(), name='help'),
+    path('callback/', CallBackAPIView.as_view(), name='callback'),
+    path('search/', SearchAPIView.as_view(), name='search'),
 ]

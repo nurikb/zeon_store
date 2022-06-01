@@ -1,11 +1,9 @@
 from django.contrib import auth
-from django.db.models import Q
-from django.core.paginator import Paginator
+from django.db.models import Q, Count
 from rest_framework import viewsets, generics, status
-from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
+from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import permissions
 from store.models import Product, Collection, News, AboutUs, Help, PublicOffer, Slider, Advantage, CallBack, FavoriteProduct
 from store.serializers import ProductSerializer, CollectionSerializer, NewsSerializer, AboutUsSerializer, HelpSerializer,\
     PublicOfferSerializer, SliderSerializer, SimilarProductSerializer, MainPageSerializer
@@ -112,15 +110,22 @@ class CallBackAPIView(APIView):
 
 class FavoriteProductAPIView(APIView):
     model = FavoriteProduct
+
     def get(self, request):
         user = auth.get_user(request)
-        print(user, '**************************************')
 
-    # def post(self, request, pk):
-    #     user = auth.get_user(request)
-    #     print(user, '**************************************')
-    #     if user:
-    #         print('--------------------------------------')
-    #         bookmark, created = self.model.objects.get_or_create(user=user, obj_id=pk)
-    #         if not created:
-    #             bookmark.delete()
+
+class SearchAPIView(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = SimilarProductSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ('name', 'collection__name')
+
+    def get_queryset(self):
+
+        product = Product.objects.filter(Q(name=self.request.GET.get('search')) | Q(collection__name=self.request.GET.get('search')))
+        if not product:
+            product = Product.objects.values('collection').annotate(dcount=Count('collection',)).order_by()
+            product = [Product.objects.filter(collection__id=c_product['collection']).first() for c_product in product]
+            print(product)
+        return product
