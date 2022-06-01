@@ -1,6 +1,6 @@
 from decimal import Decimal
 from django.conf import settings
-from store.models import Product
+from store.models import Product, Image
 
 
 class Cart(object):
@@ -15,17 +15,17 @@ class Cart(object):
 
     # Добавление товар в корзину пользователя
     # или обновление количества товаров
-    def add(self, product, quantity=1, update_quantity=False):
-        product_id = str(product.id)
-        if product_id not in self.cart:
-            self.cart[product_id] = {'quantity': 0,
+    def add(self, product_image, quantity=1, update_quantity=False):
+        product_image_id = str(product_image.id)
+        if product_image_id not in self.cart:
+            self.cart[product_image_id] = {'quantity': 0,
                                      'color_quantity': {},
-                                     'price': str(product.price),
-                                     'discount_price': str(product.discount_price)}
+                                     'price': str(product_image.product.price),
+                                     'discount_price': str(product_image.product.discount_price)}
         if update_quantity:
-            self.cart[product_id]['quantity'] = quantity
+            self.cart[product_image_id]['quantity'] = quantity
         else:
-            self.cart[product_id]['quantity'] += quantity
+            self.cart[product_image_id]['quantity'] += quantity
         self.save()
 
         # Сохранение данных в сессию
@@ -65,11 +65,12 @@ class Cart(object):
 
     def get_full_cart(self):
         product_ids = self.cart.keys()
-        product_list = Product.objects.filter(id__in=product_ids)
+        product_list = Image.objects.filter(id__in=product_ids)
         return product_list
 
     def get_product_count(self, product):
-        total_count = sum(item.quantity * int(p_quantity['quantity']) for item, p_quantity in zip(product, self.cart.values()))
+        # product_list = Product.objects.filter(id__in=)
+        total_count = sum(item.product.quantity * int(p_quantity['quantity']) for item, p_quantity in zip(product, self.cart.values()))
         product_quantity = sum(int(p_quantity['quantity']) for p_quantity in self.cart.values())
         return {'total_count': total_count, 'product_quantity': product_quantity}
 

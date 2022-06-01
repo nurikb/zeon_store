@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -30,7 +32,7 @@ class Collection(models.Model):
 class Image(models.Model):
      image = models.ImageField(null=True, blank=True)
      color = ColorField()
-     product = models.ForeignKey("Product", on_delete=models.CASCADE, null=True)
+     product = models.ForeignKey("Product", on_delete=models.CASCADE, null=True, related_name='product')
 
      def __str__(self):
           return f'{self.color}_{self.image}'
@@ -195,3 +197,52 @@ class CallBack(models.Model):
           if self.contacted:
                return f'Связались'
           return f'Не связались'
+
+
+class FirstFooter(models.Model):
+     class Meta:
+          verbose_name_plural = 'Первая вкладка'
+          verbose_name = 'Первая вкладка'
+
+     logo = models.ImageField()
+     text = models.TextField()
+     number = models.CharField(max_length=25)
+
+
+social_type = (
+     ('phone','номер',),
+     ('почта', 'mail'),
+     ('инстаграм','instagram'),
+     ('телеграм','telegram'),
+     ('whatsapp','whatsapp')
+)
+
+
+class SecondFooter(models.Model):
+
+     class Meta:
+          verbose_name_plural = 'Вторая вкладка'
+          verbose_name = 'Вторая вкладка'
+     type = models.CharField(choices=social_type, max_length=100)
+     link = models.CharField(max_length=100, null=True, verbose_name='ссылка или номер', help_text='номер в формате - 0555555555')
+
+     def save(self, *args, **kwargs):
+          if self.type == 'whatsapp':
+               # number = re.match(r'^([\s\d]+)$', self.link)
+               self.link = f'https://wa.me/{self.link}'
+          super(SecondFooter, self).save(*args, **kwargs)
+
+
+class Favorite(models.Model):
+     class Meta:
+          abstract = True
+
+     user = models.ForeignKey(User, verbose_name="Пользователь", on_delete=models.CASCADE)
+
+     def __str__(self):
+          return self.user.username
+
+
+class FavoriteProduct(Favorite):
+
+     obj = models.ForeignKey(Product, verbose_name='продукт', on_delete=models.CASCADE)

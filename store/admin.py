@@ -2,7 +2,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib import admin
 
 from store.models import (Product, Collection, News, Image, AboutUsImage, AboutUs, Help, PublicOffer,
-                          Advantage, Slider, HelpImage, CallBack)
+                          Advantage, Slider, HelpImage, CallBack, FirstFooter, SecondFooter)
 from store.forms import ProductForm, SvgImageForm
 
 
@@ -79,3 +79,7 @@ admin.site.register(News)
 admin.site.register(HelpImage, HelpFormAdmin)
 admin.site.register(Collection)
 admin.site.register(PublicOffer)
+admin.site.register(FirstFooter)
+admin.site.register(Image)
+admin.site.register(SecondFooter)
+

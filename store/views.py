@@ -1,3 +1,4 @@
+from django.contrib import auth
 from django.db.models import Q
 from django.core.paginator import Paginator
 from rest_framework import viewsets, generics, status
@@ -5,7 +6,7 @@ from rest_framework.pagination import LimitOffsetPagination, PageNumberPaginatio
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
-from store.models import Product, Collection, News, AboutUs, Help, PublicOffer, Slider, Advantage, CallBack
+from store.models import Product, Collection, News, AboutUs, Help, PublicOffer, Slider, Advantage, CallBack, FavoriteProduct
 from store.serializers import ProductSerializer, CollectionSerializer, NewsSerializer, AboutUsSerializer, HelpSerializer,\
     PublicOfferSerializer, SliderSerializer, SimilarProductSerializer, MainPageSerializer
 from cart.favorite import Favorite
@@ -39,8 +40,9 @@ class CollectionProductsItem(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         # добавил к отфильтрованным товарам "Новинки"
         queryset = self.filter_queryset(self.get_queryset())
+        favorite = Favorite(request)
         new_product = Product.objects.filter(new=True)[:5]
-        new_product_ser = SimilarProductSerializer(new_product, many=True).data
+        new_product_ser = SimilarProductSerializer(new_product, many=True, context={'favorite': favorite.favorite}).data
 
         page = self.paginate_queryset(queryset)
         test = self.paginate_queryset(new_product_ser)
@@ -96,22 +98,7 @@ class MainPageAdvantageAPIView(generics.ListAPIView):
 class CallBackAPIView(APIView):
     """View для 'Обратного звонка'"""
     def post(self, request):
-        """
-            This text is the description for this API.
 
-            ---
-            parameters:
-            - name: username
-              description: Foobar long description goes here
-              required: true
-              type: string
-              paramType: form
-            - name: password
-              paramType: form
-              required: true
-              type: string
-        """
-        ...
         name = request.data.get('name')
         phone = request.data.get('phone')
         type = request.data.get('callback_type')
@@ -121,3 +108,19 @@ class CallBackAPIView(APIView):
             return Response({'success': True})
         except:
             return Response({'success': False})
+
+
+class FavoriteProductAPIView(APIView):
+    model = FavoriteProduct
+    def get(self, request):
+        user = auth.get_user(request)
+        print(user, '**************************************')
+
+    # def post(self, request, pk):
+    #     user = auth.get_user(request)
+    #     print(user, '**************************************')
+    #     if user:
+    #         print('--------------------------------------')
+    #         bookmark, created = self.model.objects.get_or_create(user=user, obj_id=pk)
+    #         if not created:
+    #             bookmark.delete()

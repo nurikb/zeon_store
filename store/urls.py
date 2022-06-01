@@ -1,7 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from store.views import (CollectionAPIView, NewsAPIView, AboutUsViewSet, HelpViewSet, PublicOfferAPIView,
-                         MainPageTopSalesAPIView, ProductDetailAPIView, CollectionProductsItem, MainPageNewAPIView, CallBackAPIView)
+                         MainPageTopSalesAPIView, ProductDetailAPIView, CollectionProductsItem, MainPageNewAPIView,
+                         CallBackAPIView, FavoriteProductAPIView)
 
 router = DefaultRouter()
 

@@ -51,12 +51,24 @@ class FavoriteSerializer(BaseProductSerializer):
 
 
 class CartSerializer(BaseProductSerializer):
-    product_image = serializers.SerializerMethodField('get_image')
-    count = serializers.SerializerMethodField('_get_quantity')
+    # product_image = serializers.SerializerMethodField('get_image')
 
     class Meta:
         model = Product
-        fields = ('id', 'name', 'count', 'quantity', 'product_image', 'price', 'discount_price', 'discount_percent', 'size',)
+        fields = ('id', 'name', 'quantity', 'price', 'discount_price', 'discount_percent', 'size',)
+
+
+class ColorProductSerializer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField('get_product')
+    count = serializers.SerializerMethodField('_get_quantity')
+
+    class Meta:
+        model = Image
+        fields = ('color', 'image', 'count', 'product')
+
+    def get_product(self, obj):
+        p_data = CartSerializer(instance=obj.product).data
+        return p_data
 
     def _get_quantity(self, obj):
         quantity = self.context.get('quantity')[str(obj.id)]['quantity']

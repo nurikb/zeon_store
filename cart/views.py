@@ -4,12 +4,12 @@ from rest_framework.pagination import PageNumberPagination
 
 from cart.cart import Cart
 from cart.favorite import Favorite
-from store.models import Product
+from store.models import Product, Image
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from store.serializers import SimilarProductSerializer, CartSerializer
+from store.serializers import SimilarProductSerializer, CartSerializer, ColorProductSerializer
 
 
 class APIListPagination(PageNumberPagination):
@@ -22,13 +22,13 @@ class AddToCart(APIView):
 
     def post(self, request, pk):
         cart = Cart(request)
-        product = get_object_or_404(Product, id=pk)
+        product_image = get_object_or_404(Image, product__id=pk)
         quantity = request.data.get('quantity')
         update = request.data.get('update')
         if update:
-            cart.add(product, quantity=quantity, update_quantity=True)
+            cart.add(product_image, quantity=quantity, update_quantity=True)
         else:
-            cart.add(product)
+            cart.add(product_image)
         return Response({'success': True})
 
 
@@ -45,14 +45,14 @@ class CartInfo(APIView):
     def get(self, request):
         cart = Cart(request)
         product = cart.get_full_cart()
-        cart_data = CartSerializer(product, many=True, context={'quantity': cart.cart}).data
+        cart_data = ColorProductSerializer(product, many=True, context={'quantity': cart.cart}).data
         price = cart.get_total_price()
         total_price = price['price']
         discount_price = price['discount_price']
         discount_sum = total_price - discount_price
         count = cart.get_product_count(product)
         return Response({'product': cart_data, 'total_price': total_price, 'discount_price': discount_price,
-                         'discount_sum': discount_sum, 'product_count': count['total_count'],
+                         'discount_sum': discount_sum, 'total_count': count['total_count'],
                          'product_quantity': count['product_quantity']})
 
 
