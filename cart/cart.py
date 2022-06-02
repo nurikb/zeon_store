@@ -18,15 +18,14 @@ class Cart(object):
     def add(self, product, color, quantity=1, update_quantity=False):
         product_id = str(product.id)
         if product_id not in self.cart:
-            self.cart[product_id] = {'quantity': 0,
+            self.cart[product_id] = {
+                                     'product_quantity': product.quantity,
                                      'color_quantity': {color: 0},
                                      'price': str(product.price),
                                      'discount_price': str(product.discount_price)}
         if update_quantity:
-            self.cart[product_id]['quantity'] = quantity
             self.cart[product_id]['color_quantity'][color] = quantity
         else:
-            self.cart[product_id]['quantity'] += quantity
             try:
                 self.cart[product_id]['color_quantity'][color] += quantity
             except KeyError:
@@ -56,16 +55,16 @@ class Cart(object):
 
         for item in self.cart.values():
             item['price'] = Decimal(item['price'])
-            item['total_price'] = item['price'] * item['quantity']
+            item['total_price'] = item['price'] * sum((item['color_quantity'].values()))
             yield item
 
     # Количество товаров
     def __len__(self):
-        return sum(item['quantity'] for item in self.cart.values())
+        return sum(sum((item['color_quantity'].values())) for item in self.cart.values())
 
     def get_total_price(self):
-        price = sum(int(item['price'])*int(item['quantity']) for item in self.cart.values())
-        discount_price = sum(int(item['discount_price'])*int(item['quantity']) for item in self.cart.values())
+        price = sum(int(item['price'])*(sum((item['color_quantity'].values())) * item['product_quantity']) for item in self.cart.values())
+        discount_price = sum(int(item['discount_price'])*(sum((item['color_quantity'].values())) * item['product_quantity']) for item in self.cart.values())
         return {'price': price, 'discount_price': discount_price}
 
     def get_full_cart(self):
@@ -74,8 +73,8 @@ class Cart(object):
         return product_list
 
     def get_product_count(self, product):
-        total_count = sum(item.quantity * int(p_quantity['quantity']) for item, p_quantity in zip(product, self.cart.values()))
-        product_quantity = sum(int(p_quantity['quantity']) for p_quantity in self.cart.values())
+        total_count = sum(item.quantity * sum((p_quantity['color_quantity'].values())) for item, p_quantity in zip(product, self.cart.values()))
+        product_quantity = sum(sum((p_quantity['color_quantity'].values())) for p_quantity in self.cart.values())
         return {'total_count': total_count, 'product_quantity': product_quantity}
 
     def clear(self):

@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from rest_framework.pagination import PageNumberPagination
@@ -10,6 +11,7 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from store.serializers import SimilarProductSerializer, CartSerializer
+import random
 
 
 class APIListPagination(PageNumberPagination):
@@ -85,6 +87,20 @@ class FavoriteInfo(generics.ListAPIView):
         favorite = Favorite(self.request)
         return super(FavoriteInfo, self).get_serializer(*args, **kwargs, context={'favorite': favorite.favorite})
 
-    def get_queryset(self):
-        fav = Favorite(self.request)
-        return self.queryset.filter(id__in=fav.favorite)
+    def list(self, request, *args, **kwargs):
+        favorite = Favorite(request)
+        queryset = self.queryset
+        filtered_queryset = queryset.filter(id__in=favorite.favorite)
+        favorite_status = True
+
+        if not favorite.favorite:
+            favorite_status = False
+            collection_id_list = queryset.values('collection').annotate(dcount=Count('collection', )).order_by()[:5]
+            product_id_list = [random.choice(queryset.filter(collection__id=c_product['collection'])).id for c_product
+                               in collection_id_list]
+            filtered_queryset = queryset.filter(id__in=product_id_list)
+
+        page = self.paginate_queryset(filtered_queryset)
+
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response({'favorite': serializer.data, 'favorite_status': favorite_status})

@@ -17,8 +17,8 @@ class Collection(models.Model):
           verbose_name_plural = 'Коллекция'
           verbose_name = 'Коллекция'
 
-     name = models.CharField(max_length=100)
-     image = models.ImageField(default=None)
+     name = models.CharField(max_length=100, verbose_name='название')
+     image = models.ImageField(default=None, verbose_name='картинка')
      slug = models.SlugField(unique=True, null=True, blank=True)
 
      def save(self, *args, **kwargs):
@@ -30,9 +30,9 @@ class Collection(models.Model):
 
 
 class Image(models.Model):
-     image = models.ImageField(null=True, blank=True)
-     color = ColorField()
-     product = models.ForeignKey("Product", on_delete=models.CASCADE, null=True, related_name='product')
+     image = models.ImageField(null=True, blank=True, verbose_name='картина под цвет продукта')
+     color = ColorField(verbose_name='цвет продукта')
+     product = models.ForeignKey("Product", on_delete=models.CASCADE, null=True, related_name='product_image')
 
      def __str__(self):
           return f'{self.color}_{self.image}'
@@ -44,11 +44,11 @@ class Product(models.Model):
           verbose_name_plural = 'Товары'
           verbose_name = 'Товар'
 
-     name = models.CharField(max_length=100)
-     price = models.IntegerField()
-     article = models.CharField(max_length=100, null=True)
-     discount_price = models.IntegerField(null=True, blank=True)
-     discount_percent = models.IntegerField(null=True)
+     name = models.CharField(max_length=100, verbose_name='название')
+     price = models.IntegerField(verbose_name='цена')
+     article = models.CharField(max_length=100, null=True, verbose_name='артикул')
+     discount_price = models.IntegerField(null=True, blank=True, verbose_name='цена со скидкой')
+     discount_percent = models.IntegerField(null=True, verbose_name='скидка')
      slug = models.SlugField(unique=True, null=True, blank=True)
      collection = models.ForeignKey(
           Collection,
@@ -58,18 +58,18 @@ class Product(models.Model):
           null=True
      )
      quantity = models.IntegerField(null=True, verbose_name='количество')
-     size = models.CharField(max_length=10, null=True)
+     size = models.CharField(max_length=10, null=True, verbose_name='размер')
      substance = models.CharField(max_length=25, null=True, verbose_name='Состав ткани')
-     material = models.CharField(max_length=100, null=True)
+     material = models.CharField(max_length=100, null=True, verbose_name='материал')
      about_text = RichTextUploadingField('Описание товара', null=True, blank=True)
-     color = models.CharField(max_length=255, verbose_name='цвет', null=True)
-     top_sales = models.BooleanField(default=False)
-     new = models.BooleanField(default=True)
+     top_sales = models.BooleanField(default=False, verbose_name='хит продаж')
+     new = models.BooleanField(default=True, verbose_name='новинки')
 
      def save(self, *args, **kwargs):
           self.slug = slugify(self.name)
           if self.discount_percent:
                self.discount_price = self.price - (self.price/100) * self.discount_percent
+          # self.quantity =
           super(Product, self).save(*args, **kwargs)
 
      def __str__(self):
@@ -77,23 +77,49 @@ class Product(models.Model):
 
 
 class Order(models.Model):
-     created_at = models.DateTimeField(auto_now_add=True)
-     modified_at = models.DateTimeField(auto_now=True)
-     client_email = models.EmailField()
-     client_phone = models.CharField(max_length=20)
-     country = models.CharField(max_length=25)
-     city = models.CharField(max_length=25)
-     total_price = models.DecimalField(max_digits=6, decimal_places=3)
+     product_quantity = models.IntegerField(null=True, verbose_name='количество линеек')
+     total_quantity = models.IntegerField(null=True, verbose_name='количество товаров')
+     discount_sum = models.IntegerField(null=True, verbose_name='скидка')
+     discount_price = models.IntegerField(null=True, verbose_name='итого к оплате')
+     total_price = models.IntegerField(null=True, verbose_name='стоимость')
+     client = models.ForeignKey('Client', on_delete=models.CASCADE, null=True)
+
+     # def __str__(self):
+     #      return f'{self.id}'
 
 
 class OrderDetail(models.Model):
-     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_detail')
-     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='order_product')
-     quantity = models.IntegerField()
-     total_price = models.DecimalField(max_digits=6, decimal_places=3)
-     created_at = models.DateTimeField(auto_now_add=True)
-     modified_at = models.DateTimeField(auto_now=True)
+     product_image = models.ForeignKey(Image, on_delete=models.CASCADE, null=True, verbose_name='картина/цвет товара')
+     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_detail', verbose_name='заказ')
+     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='order_product', verbose_name='товар')
+     quantity = models.IntegerField(null=True, verbose_name='количество в линейке')
+
+     # def __str__(self):
+     #      return self.product
+
+
+status_choice = (
+     ('Новый', 'Новый',),
+     ('Оформлен', 'Оформлен'),
+     ('Отменен', 'Отменен'),
+)
+
+
+class Client(models.Model):
+     class Meta:
+          verbose_name_plural = 'Клиенты'
+          verbose_name = 'Клиенты'
+
+     name = models.CharField(max_length=100, verbose_name='имя')
+     surname = models.CharField(max_length=100, verbose_name='фамилия')
+     country = models.CharField(max_length=100, verbose_name='страна')
+     city = models.CharField(max_length=100, verbose_name='город')
+     email = models.EmailField(verbose_name='эл. почта')
+     date = models.DateField(auto_now_add=True, verbose_name='дата оформления')
+     status = models.CharField(choices=status_choice, max_length=20, default='Новый', verbose_name='статус')
+
+     def __str__(self):
+          return f'{self.status}-{self.name}'
 
 
 class AboutUsImage(models.Model):
@@ -119,8 +145,8 @@ class News(models.Model):
           verbose_name_plural = 'Новости'
           verbose_name = 'Новости'
 
-     title = models.CharField(max_length=100)
-     image = models.ImageField()
+     title = models.CharField(max_length=100, verbose_name='заголовок')
+     image = models.ImageField(verbose_name='картинка')
      text = RichTextUploadingField('Описание')
 
      def __str__(self):
@@ -128,8 +154,8 @@ class News(models.Model):
 
 
 class Help(models.Model):
-     question = models.TextField()
-     answer = models.TextField()
+     question = models.TextField(verbose_name='вопрос')
+     answer = models.TextField(verbose_name='ответ')
      image = models.ForeignKey('HelpImage', on_delete=models.DO_NOTHING, null=True)
 
      def __str__(self):
@@ -140,7 +166,7 @@ class HelpImage(models.Model):
      class Meta:
           verbose_name_plural = 'Вопросы и ответы'
           verbose_name = 'Вопросы и ответы'
-     image = models.ImageField()
+     image = models.ImageField(verbose_name='картина')
 
 
 class PublicOffer(models.Model):
@@ -149,7 +175,7 @@ class PublicOffer(models.Model):
           verbose_name_plural = 'Публичный оффер'
           verbose_name = 'Публичный оффер'
 
-     title = models.CharField(max_length=100)
+     title = models.CharField(max_length=100, verbose_name='заголовок')
      text = RichTextUploadingField('Описание')
 
      def __str__(self):
@@ -162,10 +188,10 @@ class Advantage(models.Model):
           verbose_name_plural = 'Наши преимущества'
           verbose_name = 'Наши преимущества'
 
-     icon = models.ImageField()
-     title = models.CharField(max_length=100)
-     text = models.TextField()
-     active = models.BooleanField(default=True)
+     icon = models.ImageField(verbose_name='иконка')
+     title = models.CharField(max_length=100, verbose_name='заголовок')
+     text = models.TextField(verbose_name='описание')
+     active = models.BooleanField(default=True, verbose_name='показывать на сайте?')
 
      def __str__(self):
           return self.title
@@ -176,9 +202,9 @@ class Slider(models.Model):
           verbose_name_plural = 'Слайдер '
           verbose_name = 'Слайдер'
 
-     image = models.ImageField()
-     link = models.CharField(max_length=150, null=True)
-     active = models.BooleanField(default=True)
+     image = models.ImageField(verbose_name='картинка')
+     link = models.CharField(max_length=150, null=True, verbose_name='ссылка')
+     active = models.BooleanField(default=True, verbose_name='показывать на сайте?')
 
 
 class CallBack(models.Model):
@@ -186,12 +212,11 @@ class CallBack(models.Model):
           verbose_name_plural = 'Обратный звонок '
           verbose_name = 'Обратный звонок'
 
-     name = models.CharField(max_length=100)
-     phone_number = models.CharField(max_length=100)
+     name = models.CharField(max_length=100, verbose_name='имя')
+     phone_number = models.CharField(max_length=100, verbose_name='номер')
      date = models.DateField(auto_now_add=True)
-     callback_type = models.CharField(max_length=100, null=True)
-     contacted = models.BooleanField(default=False)
-
+     callback_type = models.CharField(max_length=100, null=True, verbose_name='тип обращения')
+     contacted = models.BooleanField(default=False, verbose_name='статус')
 
      def __str__(self):
           if self.contacted:
@@ -204,9 +229,9 @@ class FirstFooter(models.Model):
           verbose_name_plural = 'Первая вкладка'
           verbose_name = 'Первая вкладка'
 
-     logo = models.ImageField()
-     text = models.TextField()
-     number = models.CharField(max_length=25)
+     logo = models.ImageField(verbose_name='логотип')
+     text = models.TextField(verbose_name='текстовая информация')
+     number = models.CharField(max_length=25, verbose_name='номер в хедере')
 
 
 social_type = (
@@ -223,7 +248,7 @@ class SecondFooter(models.Model):
      class Meta:
           verbose_name_plural = 'Вторая вкладка'
           verbose_name = 'Вторая вкладка'
-     type = models.CharField(choices=social_type, max_length=100)
+     type = models.CharField(choices=social_type, max_length=100, verbose_name='тип')
      link = models.CharField(max_length=100, null=True, verbose_name='ссылка или номер', help_text='номер в формате - 0555555555')
 
      def save(self, *args, **kwargs):

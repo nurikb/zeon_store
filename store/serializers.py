@@ -33,6 +33,11 @@ class BaseProductSerializer(serializers.ModelSerializer):
         return False
 
 
+class ProductDetailSerializer(BaseProductSerializer):
+    product_image = serializers.SerializerMethodField('get_image')
+    favorite = serializers.SerializerMethodField('get_favorite')
+
+
 class SimilarProductSerializer(BaseProductSerializer):
     product_image = serializers.SerializerMethodField('get_image')
     favorite = serializers.SerializerMethodField('get_favorite')
@@ -73,11 +78,6 @@ class ColorProductSerializer(serializers.ModelSerializer):
     def get_product(self, obj):
         p_data = CartSerializer(instance=obj.produt).data
         return p_data
-
-
-class ProductSerializer(BaseProductSerializer):
-    product_image = serializers.SerializerMethodField('get_image')
-    favorite = serializers.SerializerMethodField('get_favorite')
 
 
 class NewsSerializer(serializers.ModelSerializer):
@@ -148,3 +148,10 @@ class MainPageSerializer(serializers.ModelSerializer):
         slider = Slider.objects.filter(active=True)
         slider_ser = SliderSerializer(instance=slider, many=True).data
         return slider_ser
+
+
+class SearhcWithHintSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = ('name',)

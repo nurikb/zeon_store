@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'colorfield',
     'rest_framework_swagger',
     'django_filters',
+    'fieldsets_with_inlines',
 
     'store',
     'cart',

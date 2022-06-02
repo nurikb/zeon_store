@@ -4,17 +4,20 @@ from rest_framework import viewsets, generics, status
 from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from store.models import Product, Collection, News, AboutUs, Help, PublicOffer, Slider, Advantage, CallBack, FavoriteProduct
-from store.serializers import ProductSerializer, CollectionSerializer, NewsSerializer, AboutUsSerializer, HelpSerializer,\
-    PublicOfferSerializer, SliderSerializer, SimilarProductSerializer, MainPageSerializer
+from store.models import (Product, Collection, News, AboutUs, Help, Client, Order, OrderDetail,
+                          PublicOffer, Slider, Advantage, CallBack, FavoriteProduct, Image)
+from store.serializers import (ProductDetailSerializer, CollectionSerializer, NewsSerializer,
+                               AboutUsSerializer, HelpSerializer, PublicOfferSerializer, SliderSerializer,
+                               SimilarProductSerializer, MainPageSerializer, SearhcWithHintSerializer)
 from cart.favorite import Favorite
+from cart.views import APIListPagination
 
 
 class ProductDetailAPIView(APIView):
     def get(self, request, pk):
         product = Product.objects.get(id=pk)
         favorite = Favorite(request)
-        serializer_data = ProductSerializer(product, context={'favorite': favorite.favorite}).data
+        serializer_data = ProductDetailSerializer(product, context={'favorite': favorite.favorite}).data
         similar_product = Product.objects.filter(Q(collection__id=product.collection.id) & ~Q(id=product.id))[:5]
         similar_product_data = SimilarProductSerializer(similar_product, many=True, context={'favorite': favorite.favorite}).data
         return Response({'product': serializer_data, 'similar_products': similar_product_data})
@@ -28,28 +31,29 @@ class CollectionAPIView(generics.ListAPIView):
 class CollectionProductsItem(generics.ListAPIView):
 
     """View для товаров в коллекции + новинки"""
+
     queryset = Product.objects.all()
     serializer_class = SimilarProductSerializer
+    pagination_class = APIListPagination
 
     def get_queryset(self):
+
         """фильтрация товаров по коллекции"""
+
         return self.queryset.filter(collection__id=self.kwargs['pk'])
 
     def list(self, request, *args, **kwargs):
-        # добавил к отфильтрованным товарам "Новинки"
+
+        """переопределил list():добавил к отфильтрованным товарам "'Новинки'"""
+
         queryset = self.filter_queryset(self.get_queryset())
         favorite = Favorite(request)
         new_product = Product.objects.filter(new=True)[:5]
         new_product_ser = SimilarProductSerializer(new_product, many=True, context={'favorite': favorite.favorite}).data
 
         page = self.paginate_queryset(queryset)
-        test = self.paginate_queryset(new_product_ser)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response({'collection_product': serializer.data, 'new_product': test})
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response({'collection_product': serializer.data, 'new_product': new_product_ser})
 
 
 class NewsAPIView(generics.ListAPIView):
@@ -94,7 +98,9 @@ class MainPageAdvantageAPIView(generics.ListAPIView):
 
 
 class CallBackAPIView(APIView):
+
     """View для 'Обратного звонка'"""
+
     def post(self, request):
 
         name = request.data.get('name')
@@ -121,11 +127,64 @@ class SearchAPIView(generics.ListAPIView):
     filter_backends = [SearchFilter]
     search_fields = ('name', 'collection__name')
 
-    def get_queryset(self):
+    def list(self, request, *args, **kwargs):
 
-        product = Product.objects.filter(Q(name=self.request.GET.get('search')) | Q(collection__name=self.request.GET.get('search')))
-        if not product:
-            product = Product.objects.values('collection').annotate(dcount=Count('collection',)).order_by()
-            product = [Product.objects.filter(collection__id=c_product['collection']).first() for c_product in product]
-            print(product)
-        return product
+        """
+        переопределил list(): если нет результата функции self.filter_queryset()
+        добавил 5 обьектов класса(модели) Product
+        """
+
+        queryset = self.get_queryset()
+        filtered_queryset = self.filter_queryset(queryset)
+        filtered_queryset_status = True
+        hints = SearhcWithHintSerializer(filtered_queryset, many=True).data
+
+        if not filtered_queryset:
+            filtered_queryset_status = False
+            collection_id_list = queryset.values('collection').annotate(dcount=Count('collection', )).order_by()[:5]
+            product_id_list = [queryset.filter(collection__id=c_product['collection']).first().id for c_product in
+                               collection_id_list]
+            filtered_queryset = queryset.filter(id__in=product_id_list)
+
+        page = self.paginate_queryset(filtered_queryset)
+        favorite = Favorite(request)
+        search_param = self.request.GET.get('search')
+
+        serializer = self.get_serializer(page, many=True, context={'favorite': favorite.favorite})
+        return self.get_paginated_response({'search_result': serializer.data, 'hints': hints,
+                                            'search_param': search_param, 'search_status': filtered_queryset_status})
+
+
+class OrderAPIView(APIView):
+    def post(self, request):
+        name = request.data.get('name')
+        surname = request.data.get('surname')
+        country = request.data.get('country')
+        city = request.data.get('city')
+        email = request.data.get('email')
+        total_price = request.data.get('total_price')
+        discount_price = request.data.get('discount_price')
+        discount_sum = request.data.get('discount_sum')
+        total_quantity = request.data.get('total_quantity')
+        product_quantity = request.data.get('product_quantity')
+        products = request.data.get('products')
+
+        try:
+            client = Client(name=name, surname=surname, country=country, city=city, email=email)
+            client.save()
+            order = Order(client=client, total_quantity=total_quantity, total_price=total_price,
+                          discount_price=discount_price, discount_sum=discount_sum, product_quantity=product_quantity)
+            order.save()
+            for product in products:
+                product_obj = Product.objects.get(id=product['id'])
+                image_obj = Image.objects.get(product__id=product['id'], color=product['color'])
+                order_detail = OrderDetail(order=order, product=product_obj,
+                                           product_image=image_obj, quantity=product['quantity'])
+                order_detail.save()
+            return Response({'success': True})
+        except Exception as e:
+            order.delete()
+            client.delete()
+            print(e)
+            return Response({'success': False})
+
