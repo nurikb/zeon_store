@@ -1,3 +1,5 @@
+import random
+
 from django.contrib import auth
 from django.db.models import Q, Count
 from rest_framework import viewsets, generics, status
@@ -5,10 +7,10 @@ from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from store.models import (Product, Collection, News, AboutUs, Help, Client, Order, OrderDetail,
-                          PublicOffer, Slider, Advantage, CallBack, FavoriteProduct, Image)
+                          PublicOffer, Slider, Advantage, CallBack, FavoriteProduct, Image, FirstFooter, SecondFooter)
 from store.serializers import (ProductDetailSerializer, CollectionSerializer, NewsSerializer,
                                AboutUsSerializer, HelpSerializer, PublicOfferSerializer, SliderSerializer,
-                               SimilarProductSerializer, MainPageSerializer, SearhcWithHintSerializer)
+                               SimilarProductSerializer, MainPageSerializer, SearhcWithHintSerializer, FooterSerializer)
 from cart.favorite import Favorite
 from cart.views import APIListPagination
 
@@ -97,6 +99,11 @@ class MainPageAdvantageAPIView(generics.ListAPIView):
     serializer_class = MainPageSerializer
 
 
+class FooterAPIView(generics.ListAPIView):
+    queryset = FirstFooter.objects.all()
+    serializer_class = FooterSerializer
+
+
 class CallBackAPIView(APIView):
 
     """View для 'Обратного звонка'"""
@@ -121,40 +128,6 @@ class FavoriteProductAPIView(APIView):
         user = auth.get_user(request)
 
 
-class SearchAPIView(generics.ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = SimilarProductSerializer
-    filter_backends = [SearchFilter]
-    search_fields = ('name', 'collection__name')
-
-    def list(self, request, *args, **kwargs):
-
-        """
-        переопределил list(): если нет результата функции self.filter_queryset()
-        добавил 5 обьектов класса(модели) Product
-        """
-
-        queryset = self.get_queryset()
-        filtered_queryset = self.filter_queryset(queryset)
-        filtered_queryset_status = True
-        hints = SearhcWithHintSerializer(filtered_queryset, many=True).data
-
-        if not filtered_queryset:
-            filtered_queryset_status = False
-            collection_id_list = queryset.values('collection').annotate(dcount=Count('collection', )).order_by()[:5]
-            product_id_list = [queryset.filter(collection__id=c_product['collection']).first().id for c_product in
-                               collection_id_list]
-            filtered_queryset = queryset.filter(id__in=product_id_list)
-
-        page = self.paginate_queryset(filtered_queryset)
-        favorite = Favorite(request)
-        search_param = self.request.GET.get('search')
-
-        serializer = self.get_serializer(page, many=True, context={'favorite': favorite.favorite})
-        return self.get_paginated_response({'search_result': serializer.data, 'hints': hints,
-                                            'search_param': search_param, 'search_status': filtered_queryset_status})
-
-
 class OrderAPIView(APIView):
     def post(self, request):
         name = request.data.get('name')
@@ -170,15 +143,17 @@ class OrderAPIView(APIView):
         products = request.data.get('products')
 
         try:
-            client = Client(name=name, surname=surname, country=country, city=city, email=email)
-            client.save()
-            order = Order(client=client, total_quantity=total_quantity, total_price=total_price,
+            order = Order(total_quantity=total_quantity, total_price=total_price,
                           discount_price=discount_price, discount_sum=discount_sum, product_quantity=product_quantity)
             order.save()
+
+            client = Client(name=name, surname=surname, country=country, city=city, email=email, order=order)
+            client.save()
+
             for product in products:
                 product_obj = Product.objects.get(id=product['id'])
                 image_obj = Image.objects.get(product__id=product['id'], color=product['color'])
-                order_detail = OrderDetail(order=order, product=product_obj,
+                order_detail = OrderDetail(order=order, product=product_obj, color=image_obj.color,
                                            product_image=image_obj, quantity=product['quantity'])
                 order_detail.save()
             return Response({'success': True})

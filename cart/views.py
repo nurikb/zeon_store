@@ -10,7 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from store.serializers import SimilarProductSerializer, CartSerializer
+from store.serializers import SimilarProductSerializer
+from cart.serializers import CartSerializer
 import random
 
 
@@ -48,7 +49,6 @@ class CartInfo(APIView):
     def get(self, request):
         cart = Cart(request)
         product = cart.get_full_cart()
-        print(product)
         cart_data = CartSerializer(product, many=True, context={'quantity': cart.cart}).data
         price = cart.get_total_price()
         total_price = price['price']
@@ -95,9 +95,10 @@ class FavoriteInfo(generics.ListAPIView):
 
         if not favorite.favorite:
             favorite_status = False
-            collection_id_list = queryset.values('collection').annotate(dcount=Count('collection', )).order_by()[:5]
-            product_id_list = [random.choice(queryset.filter(collection__id=c_product['collection'])).id for c_product
-                               in collection_id_list]
+            collection_id_list = list(set(queryset.values_list('collection_id')))[:5]
+            print(collection_id_list)
+            product_id_list = [random.choice(queryset.filter(collection_id=c_product)).id for c_product in
+                               collection_id_list]
             filtered_queryset = queryset.filter(id__in=product_id_list)
 
         page = self.paginate_queryset(filtered_queryset)

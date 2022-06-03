@@ -1,6 +1,6 @@
 from decimal import Decimal
 from django.conf import settings
-from store.models import Product
+from store.models import Product, Image
 
 
 class Cart(object):
@@ -69,6 +69,13 @@ class Cart(object):
 
     def get_full_cart(self):
         product_ids = self.cart.keys()
+        # print(product_ids, self.cart)
+        # print(self.cart)
+        # for color in self.cart:
+        #     print(color)
+        # color_list = [color['color_quantity'].keys() for color in self.cart.values()]
+        # for i in color_list:
+        #     print(i)
         product_list = Product.objects.filter(id__in=product_ids)
         return product_list
 

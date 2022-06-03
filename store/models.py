@@ -1,5 +1,4 @@
 import re
-
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -34,9 +33,6 @@ class Image(models.Model):
      color = ColorField(verbose_name='цвет продукта')
      product = models.ForeignKey("Product", on_delete=models.CASCADE, null=True, related_name='product_image')
 
-     def __str__(self):
-          return f'{self.color}_{self.image}'
-
 
 class Product(models.Model):
 
@@ -66,7 +62,7 @@ class Product(models.Model):
      new = models.BooleanField(default=True, verbose_name='новинки')
 
      def save(self, *args, **kwargs):
-          self.slug = slugify(self.name)
+          # self.slug = slugify(self.name)
           if self.discount_percent:
                self.discount_price = self.price - (self.price/100) * self.discount_percent
           # self.quantity =
@@ -82,7 +78,6 @@ class Order(models.Model):
      discount_sum = models.IntegerField(null=True, verbose_name='скидка')
      discount_price = models.IntegerField(null=True, verbose_name='итого к оплате')
      total_price = models.IntegerField(null=True, verbose_name='стоимость')
-     client = models.ForeignKey('Client', on_delete=models.CASCADE, null=True)
 
      # def __str__(self):
      #      return f'{self.id}'
@@ -92,9 +87,10 @@ class OrderDetail(models.Model):
      product_image = models.ForeignKey(Image, on_delete=models.CASCADE, null=True, verbose_name='картина/цвет товара')
      order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_detail', verbose_name='заказ')
      product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='order_product', verbose_name='товар')
-     quantity = models.IntegerField(null=True, verbose_name='количество в линейке')
+     quantity = models.IntegerField(null=True, verbose_name='количество заказанных товаров')
+     color = ColorField(null=True)
 
-     # def __str__(self):
+          # def __str__(self):
      #      return self.product
 
 
@@ -115,6 +111,7 @@ class Client(models.Model):
      country = models.CharField(max_length=100, verbose_name='страна')
      city = models.CharField(max_length=100, verbose_name='город')
      email = models.EmailField(verbose_name='эл. почта')
+     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True)
      date = models.DateField(auto_now_add=True, verbose_name='дата оформления')
      status = models.CharField(choices=status_choice, max_length=20, default='Новый', verbose_name='статус')
 
@@ -226,8 +223,8 @@ class CallBack(models.Model):
 
 class FirstFooter(models.Model):
      class Meta:
-          verbose_name_plural = 'Первая вкладка'
-          verbose_name = 'Первая вкладка'
+          verbose_name_plural = 'Футер'
+          verbose_name = 'Футер'
 
      logo = models.ImageField(verbose_name='логотип')
      text = models.TextField(verbose_name='текстовая информация')
@@ -246,10 +243,11 @@ social_type = (
 class SecondFooter(models.Model):
 
      class Meta:
-          verbose_name_plural = 'Вторая вкладка'
-          verbose_name = 'Вторая вкладка'
+          verbose_name_plural = 'Номера телефонов'
+          verbose_name = 'Номера телефонов'
      type = models.CharField(choices=social_type, max_length=100, verbose_name='тип')
      link = models.CharField(max_length=100, null=True, verbose_name='ссылка или номер', help_text='номер в формате - 0555555555')
+     footer = models.ForeignKey(FirstFooter, on_delete=models.CASCADE, null=True)
 
      def save(self, *args, **kwargs):
           if self.type == 'whatsapp':

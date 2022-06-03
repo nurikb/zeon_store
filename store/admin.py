@@ -43,6 +43,7 @@ class ProductFormAdmin(admin.ModelAdmin):
         )}),
     )
     search_fields = ('name', 'category')
+    list_display = ('name', 'collection_id')
 
 
 class AboutUsFormAdmin(admin.ModelAdmin):
@@ -74,43 +75,52 @@ class CallBackFormAdmin(admin.ModelAdmin):
     readonly_fields = ('date',)
 
 
-class EditLinkToInlineObject(object):
-    def edit_link(self, instance):
-        url = reverse('admin:%s_%s_change' % (
-            instance._meta.app_label,  instance._meta.model_name),  args=[instance.pk] )
-        if instance.pk:
-            return mark_safe(u'<a href="{u}">edit</a>'.format(u=url))
-        else:
-            return ''
-
-
 class OrderDetailInline(admin.StackedInline):
     model = OrderDetail
-    fields = ('product_quantity', 'total_quantity', 'discount_sum', 'discount_price', 'total_price', 'product')
-
-
-class OrderInline(EditLinkToInlineObject, admin.StackedInline):
-    model = Order
-    readonly_fields = ('edit_link',)
     extra = 0
-    fields = ('product_quantity', 'total_quantity', 'discount_sum', 'discount_price', 'total_price', 'edit_link',)
+    fieldsets = (
+        ('Товар', {'fields': (
+            ('product', 'color','product_image_tag'),
+            'quantity',),
+                }),
+    )
+    readonly_fields = ('quantity', 'product', 'product_image_tag')
+
+    def product_image_tag(self, obj):
+        return mark_safe('<img src="%s" width="150" height="150" />' % (obj.product_image.image.url))
+
+    product_image_tag.short_description = 'Image'
 
 
-class ClientFormAdmin(FieldsetsInlineMixin, admin.ModelAdmin):
-    # inlines = (OrderInline,)
-    # model = Client
-    fieldsets_with_inlines = (
+class ClientInline(admin.StackedInline):
+    model = Client
+    extra = 0
+    fieldsets = (
         ('Клиент', {'fields': (
-                      'name',
-                       'surname',
-                       'country',
-                       'city',
-                       'email',
-                       'date',
-                       'status')}),
-        OrderInline,
+                        ('surname', 'name',),
+                        ('country', 'city',),
+                        'email',
+                        'date',
+                        'status')}),
     )
     readonly_fields = ('date',)
+
+
+class OrderFormAdmin(admin.ModelAdmin):
+    model = Order
+    inlines = (ClientInline, OrderDetailInline)
+    extra = 0
+    fields = ('product_quantity', 'total_quantity', 'discount_sum', 'discount_price', 'total_price',)
+
+
+class SecondFooterInline(admin.StackedInline):
+    model = SecondFooter
+    extra = 0
+
+
+class FooterFormAdmin(admin.ModelAdmin):
+    model = FirstFooter
+    inlines = (SecondFooterInline,)
 
 
 admin.site.register(AboutUs, AboutUsFormAdmin)
@@ -122,10 +132,5 @@ admin.site.register(News)
 admin.site.register(HelpImage, HelpFormAdmin)
 admin.site.register(Collection)
 admin.site.register(PublicOffer)
-admin.site.register(FirstFooter)
-admin.site.register(Image)
-admin.site.register(SecondFooter)
-admin.site.register(Order)
-admin.site.register(OrderDetail)
-admin.site.register(Client, ClientFormAdmin)
-
+admin.site.register(FirstFooter, FooterFormAdmin)
+admin.site.register(Order, OrderFormAdmin)

@@ -1,7 +1,7 @@
 from django.db.models import Q
 from rest_framework import serializers
 from store.models import (Product, Collection, Image, News, AboutUs, AboutUsImage, Help,
-                          PublicOffer, Slider, HelpImage, Advantage)
+                          PublicOffer, Slider, HelpImage, Advantage, FirstFooter, SecondFooter)
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -53,31 +53,6 @@ class FavoriteSerializer(BaseProductSerializer):
     class Meta:
         model = Product
         fields = ('id', 'name', 'count', 'quantity', 'product_image', 'price', 'discount_price', 'discount_percent', 'size', 'favorite',)
-
-
-class CartSerializer(BaseProductSerializer):
-    # product_image = serializers.SerializerMethodField('get_image')
-    count = serializers.SerializerMethodField('_get_quantity')
-
-    class Meta:
-        model = Product
-        fields = ('id', 'name', 'count', 'quantity', 'price', 'discount_price', 'discount_percent', 'size',)
-
-    def _get_quantity(self, obj):
-        quantity = self.context.get('quantity')[str(obj.id)]['color_quantity']
-        return quantity
-
-
-class ColorProductSerializer(serializers.ModelSerializer):
-    product = serializers.SerializerMethodField('get_product')
-
-    class Meta:
-        model = Image
-        fields = ('color', 'image')
-
-    def get_product(self, obj):
-        p_data = CartSerializer(instance=obj.produt).data
-        return p_data
 
 
 class NewsSerializer(serializers.ModelSerializer):
@@ -148,6 +123,25 @@ class MainPageSerializer(serializers.ModelSerializer):
         slider = Slider.objects.filter(active=True)
         slider_ser = SliderSerializer(instance=slider, many=True).data
         return slider_ser
+
+
+class NumberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SecondFooter
+        fields = ('link',)
+
+
+class FooterSerializer(serializers.ModelSerializer):
+    numbers = serializers.SerializerMethodField('get_number')
+
+    class Meta:
+        model = FirstFooter
+        fields = '__all__'
+
+    def get_number(self, obj):
+        number = SecondFooter.objects.filter(footer=obj)
+        number_data = NumberSerializer(instance=number, many=True)
+        return number_data.data
 
 
 class SearhcWithHintSerializer(serializers.ModelSerializer):
