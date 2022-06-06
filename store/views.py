@@ -72,21 +72,27 @@ class NewsAPIView(generics.ListAPIView):
     serializer_class = NewsSerializer
 
 
-class AboutUsViewSet(APIView):
+class AboutUsViewSet(generics.ListAPIView):
+    serializer_class = AboutUsSerializer
+
     def get(self, request):
         about_us = AboutUs.objects.all().first()
         about_us_data = AboutUsSerializer(about_us).data
         return Response(about_us_data)
 
 
-class HelpViewSet(APIView):
+class HelpViewSet(generics.ListAPIView):
+    serializer_class = HelpSerializer
+
     def get(self, request):
         help_obj = HelpImage.objects.all()
         help_ser_data = HelpSerializer(help_obj, many=True).data
         return Response(help_ser_data)
 
 
-class PublicOfferAPIView(APIView):
+class PublicOfferAPIView(generics.ListAPIView):
+    serializer_class = PublicOfferSerializer
+
     def get(self, request):
         p_offer = PublicOffer.objects.all().first()
         p_offer_serializer = PublicOfferSerializer(p_offer).data
@@ -113,7 +119,7 @@ class FooterAPIView(generics.ListAPIView):
     serializer_class = FooterSerializer
 
 
-class CallBackAPIView(APIView):
+class CallBackAPIView(generics.ListAPIView):
 
     """View для 'Обратного звонка'"""
 

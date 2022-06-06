@@ -63,7 +63,6 @@ class CartInfo(APIView):
         discount_price = price['discount_price']
         discount_sum = total_price - discount_price
         count = cart.get_product_count(product[0])
-        print(cart.cart)
         return Response({'product': cart_data, 'total_price': total_price, 'discount_price': discount_price,
                          'discount_sum': discount_sum, 'total_count': count['total_count'],
                          'product_quantity': count['product_quantity']})
@@ -105,7 +104,6 @@ class FavoriteInfo(generics.ListAPIView):
         if not favorite.favorite:
             favorite_status = False
             collection_id_list = list(set(queryset.values_list('collection_id')))[:5]
-            print(collection_id_list)
             product_id_list = [random.choice(queryset.filter(collection_id=c_product)).id for c_product in
                                collection_id_list]
             filtered_queryset = queryset.filter(id__in=product_id_list)

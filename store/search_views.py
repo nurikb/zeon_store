@@ -28,7 +28,7 @@ class SearchAPIView(generics.ListAPIView):
 
         if not filtered_queryset:
             filtered_queryset_status = False
-            collection_id_list = list(set(queryset.values_list('collection_id')))
+            collection_id_list = list(set(queryset.values_list('collection_id')))[:5]
 
             product_id_list = [random.choice(queryset.filter(collection_id=c_product)).id for c_product in
                                collection_id_list]

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'django_filters',
     'fieldsets_with_inlines',
+    'drf_yasg',
 
     'store',
     'cart',
