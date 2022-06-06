@@ -25,14 +25,15 @@ class AddToCart(APIView):
 
     def post(self, request, pk):
         cart = Cart(request)
-        product_image = get_object_or_404(Product, id=pk)
+        product = get_object_or_404(Product, id=pk)
         quantity = request.data.get('quantity')
         update = request.data.get('update')
         color = request.data.get('color')
+        color_id = get_object_or_404(Image, product=product, color=color)
         if update:
-            cart.add(product_image, quantity=quantity, update_quantity=True, color=color)
+            cart.add(product, quantity=quantity, update_quantity=True, color=str(color_id.id))
         else:
-            cart.add(product_image, color=color)
+            cart.add(product, color=str(color_id.id))
         return Response({'success': True})
 
 
@@ -42,6 +43,13 @@ class CartRemove(APIView):
         cart = Cart(request)
         product = get_object_or_404(Product, id=pk)
         cart.remove(product)
+        return Response({'success': True})
+
+
+class CartClear(APIView):
+    def get(self, request):
+        cart = Cart(request)
+        cart.clear()
         return Response({'success': True})
 
 
@@ -55,6 +63,7 @@ class CartInfo(APIView):
         discount_price = price['discount_price']
         discount_sum = total_price - discount_price
         count = cart.get_product_count(product[0])
+        print(cart.cart)
         return Response({'product': cart_data, 'total_price': total_price, 'discount_price': discount_price,
                          'discount_sum': discount_sum, 'total_count': count['total_count'],
                          'product_quantity': count['product_quantity']})

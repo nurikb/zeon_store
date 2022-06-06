@@ -22,7 +22,8 @@ class Cart(object):
                                      'product_quantity': product.quantity,
                                      'color_quantity': {color: 0},
                                      'price': str(product.price),
-                                     'discount_price': str(product.discount_price)}
+                                     'discount_price': str(product.discount_price),
+                                     'color_id': color}
         if update_quantity:
             self.cart[product_id]['color_quantity'][color] = quantity
             if quantity < 1:
@@ -75,7 +76,7 @@ class Cart(object):
         color_list = [list(color['color_quantity'].keys()) for color in self.cart.values()]
         color_list_union = set().union(*color_list)
 
-        color_list = Image.objects.filter(color__in=color_list_union, product__id__in=product_ids)
+        color_list = Image.objects.filter(id__in=color_list_union)
 
         product_list = Product.objects.filter(id__in=product_ids)
         return product_list, color_list

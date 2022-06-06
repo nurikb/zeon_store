@@ -23,4 +23,4 @@ class ColorProductSerializer(serializers.ModelSerializer):
         return p_data
 
     def get_count(self, obj):
-        return self.context['quantity'][str(obj.product_id)]['color_quantity'][obj.color]
+        return self.context['quantity'][str(obj.product_id)]['color_quantity'][str(obj.id)]

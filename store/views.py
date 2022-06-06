@@ -6,6 +6,8 @@ from rest_framework import viewsets, generics, status
 from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+from cart.cart import Cart
 from store.models import (Product, Collection, News, AboutUs, Help, Client, Order, OrderDetail,
                           PublicOffer, Slider, Advantage, CallBack, FavoriteProduct, Image, FirstFooter, SecondFooter,
                           HelpImage)
@@ -142,31 +144,28 @@ class OrderAPIView(APIView):
         country = request.data.get('country')
         city = request.data.get('city')
         email = request.data.get('email')
-        total_price = request.data.get('total_price')
-        discount_price = request.data.get('discount_price')
-        discount_sum = request.data.get('discount_sum')
-        total_quantity = request.data.get('total_quantity')
-        product_quantity = request.data.get('product_quantity')
-        products = request.data.get('products')
+        cart = Cart(request)
+        products = cart.get_full_cart()
+        price = cart.get_total_price()
+        total_price = price['price']
+        discount_price = price['discount_price']
+        discount_sum = total_price - discount_price
+        cart_count = cart.get_product_count(products[0])
 
         try:
-            order = Order(total_quantity=total_quantity, total_price=total_price,
-                          discount_price=discount_price, discount_sum=discount_sum, product_quantity=product_quantity)
+            order = Order(total_quantity=cart_count['total_count'], total_price=total_price,
+                          discount_price=discount_price, discount_sum=discount_sum, product_quantity=cart_count['product_quantity'])
             order.save()
 
             client = Client(name=name, surname=surname, country=country, city=city, email=email, order=order)
             client.save()
 
-            for product in products:
-                product_obj = Product.objects.get(id=product['id'])
-                image_obj = Image.objects.get(product__id=product['id'], color=product['color'])
-                order_detail = OrderDetail(order=order, product=product_obj, color=image_obj.color,
-                                           product_image=image_obj, quantity=product['quantity'])
-                order_detail.save()
+            for product_id, product_data in cart.cart.items():
+                for color, quantity in product_data['color_quantity'].items():
+                    order_detail = OrderDetail(order=order, product_id=int(product_id), quantity=quantity, product_image_id=int(color))
+                    order_detail.save()
             return Response({'success': True})
         except Exception as e:
             order.delete()
-            client.delete()
-            print(e)
             return Response({'success': False})
 

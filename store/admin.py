@@ -70,17 +70,33 @@ class OrderDetailInline(admin.StackedInline):
     extra = 0
     fieldsets = (
         ('Товар', {'fields': (
-            ('product', 'color','product_image_tag'),
-            'quantity',),
+            ('product', 'color', 'product_image_tag'),
+            ('size', 'quantity', 'price', 'discount_price')),
                 }),
     )
-    readonly_fields = ('quantity', 'product', 'product_image_tag')
+    readonly_fields = ('quantity', 'product', 'product_image_tag', 'size', 'price', 'discount_price')
 
     def product_image_tag(self, obj):
         """Отображение картинки в админ панели"""
         return mark_safe('<img src="%s" width="150" height="150" />' % (obj.product_image.image.url))
 
+    def discount_price(self, obj):
+        """Отображение цены со скидкой в админ панели"""
+        if obj.product.discount_percent:
+            return obj.product.discount_price
+
+    def price(self, obj):
+        """Отображение цены в админ панели"""
+        return obj.product.price
+
+    def size(self, obj):
+        """Отображение размера в админ панели"""
+        return obj.product.size
+
     product_image_tag.short_description = 'Image'
+    size.short_description = 'размерный ряд'
+    price.short_description = 'цена'
+    discount_price.short_description = 'цена со скидкой'
 
 
 class ClientInline(admin.StackedInline):

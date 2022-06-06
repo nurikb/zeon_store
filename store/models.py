@@ -65,6 +65,8 @@ class Product(models.Model):
           # self.slug = slugify(self.name)
           if self.discount_percent:
                self.discount_price = self.price - (self.price/100) * self.discount_percent
+          else:
+               self.discount_price = None
 
           size_list = self.size.split('-')
           if len(size_list) == 2:
@@ -82,9 +84,6 @@ class Order(models.Model):
      discount_price = models.IntegerField(null=True, verbose_name='итого к оплате')
      total_price = models.IntegerField(null=True, verbose_name='стоимость')
 
-     # def __str__(self):
-     #      return f'{self.id}'
-
 
 class OrderDetail(models.Model):
      product_image = models.ForeignKey(Image, on_delete=models.CASCADE, null=True, verbose_name='картина/цвет товара')
@@ -93,8 +92,9 @@ class OrderDetail(models.Model):
      quantity = models.IntegerField(null=True, verbose_name='количество заказанных товаров')
      color = ColorField(null=True)
 
-          # def __str__(self):
-     #      return self.product
+     def save(self, *args, **kwargs):
+          self.color = self.product_image.color
+          super(OrderDetail, self).save(*args, **kwargs)
 
 
 status_choice = (
