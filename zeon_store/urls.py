@@ -30,7 +30,7 @@ urlpatterns = [
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('api/v1/', include('store.urls')),
     path('api/v1/', include('cart.urls')),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api/auth/', include('djoser.urls')),
-    re_path(r'^auth/', include('djoser.urls.authtoken')),
+    # path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    # path('api/auth/', include('djoser.urls')),
+    # re_path(r'^auth/', include('djoser.urls.authtoken')),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

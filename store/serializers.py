@@ -96,7 +96,7 @@ class HelpSerializer(serializers.ModelSerializer):
 
     def get_help(self, image):
         help = Help.objects.filter(image=image)
-        serializer = HelpImageSerializer(instance=help.image, many=True)
+        serializer = HelpImageSerializer(instance=help, many=True)
         return serializer.data
 
 

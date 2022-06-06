@@ -25,6 +25,8 @@ class Cart(object):
                                      'discount_price': str(product.discount_price)}
         if update_quantity:
             self.cart[product_id]['color_quantity'][color] = quantity
+            if quantity < 1:
+                del self.cart[product_id]['color_quantity'][color]
         else:
             try:
                 self.cart[product_id]['color_quantity'][color] += quantity
@@ -69,15 +71,14 @@ class Cart(object):
 
     def get_full_cart(self):
         product_ids = self.cart.keys()
-        # print(product_ids, self.cart)
-        # print(self.cart)
-        # for color in self.cart:
-        #     print(color)
-        # color_list = [color['color_quantity'].keys() for color in self.cart.values()]
-        # for i in color_list:
-        #     print(i)
+
+        color_list = [list(color['color_quantity'].keys()) for color in self.cart.values()]
+        color_list_union = set().union(*color_list)
+
+        color_list = Image.objects.filter(color__in=color_list_union, product__id__in=product_ids)
+
         product_list = Product.objects.filter(id__in=product_ids)
-        return product_list
+        return product_list, color_list
 
     def get_product_count(self, product):
         total_count = sum(item.quantity * sum((p_quantity['color_quantity'].values())) for item, p_quantity in zip(product, self.cart.values()))

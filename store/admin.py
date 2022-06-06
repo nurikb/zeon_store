@@ -17,13 +17,6 @@ class ProductImageInline(admin.StackedInline):
     fields = ('image', 'color',)
 
 
-class AboutUsImageInline(admin.StackedInline):
-    max_num = 3
-    extra = 0
-    model = AboutUsImage
-    fields = ('image',)
-
-
 class ProductFormAdmin(admin.ModelAdmin):
     form = ProductForm
     inlines = (ProductImageInline,)
@@ -40,16 +33,12 @@ class ProductFormAdmin(admin.ModelAdmin):
             'substance',
             'quantity',
             'material',
+            'top_sales',
+            'new'
         )}),
     )
     search_fields = ('name', 'category')
     list_display = ('name', 'collection_id')
-
-
-class AboutUsFormAdmin(admin.ModelAdmin):
-    model = AboutUs
-    inlines = (AboutUsImageInline,)
-    list_display = ('title', 'text')
 
 
 class AdvantageFormAdmin(admin.ModelAdmin):
@@ -60,6 +49,7 @@ class AdvantageFormAdmin(admin.ModelAdmin):
 
 class HelpInline(admin.StackedInline):
     model = Help
+    extra = 0
     fields = ('question', 'answer')
 
 
@@ -87,6 +77,7 @@ class OrderDetailInline(admin.StackedInline):
     readonly_fields = ('quantity', 'product', 'product_image_tag')
 
     def product_image_tag(self, obj):
+        """Отображение картинки в админ панели"""
         return mark_safe('<img src="%s" width="150" height="150" />' % (obj.product_image.image.url))
 
     product_image_tag.short_description = 'Image'
@@ -123,6 +114,33 @@ class FooterFormAdmin(admin.ModelAdmin):
     inlines = (SecondFooterInline,)
 
 
+class HasAddPermission(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        """Лимит на создание обьектов модели"""
+        num_objects = self.model.objects.count()
+        if num_objects >= 1:
+            return False
+        else:
+            return True
+
+
+class AboutUsImageInline(admin.StackedInline):
+    max_num = 3
+    extra = 0
+    model = AboutUsImage
+    fields = ('image',)
+
+
+class AboutUsFormAdmin(HasAddPermission):
+    model = AboutUs
+    inlines = (AboutUsImageInline,)
+    list_display = ('title', 'text')
+
+
+class PublicOfferFormAdmin(HasAddPermission):
+    model = PublicOffer
+
+
 admin.site.register(AboutUs, AboutUsFormAdmin)
 admin.site.register(Advantage, AdvantageFormAdmin)
 admin.site.register(Product, ProductFormAdmin)
@@ -131,6 +149,6 @@ admin.site.register(CallBack, CallBackFormAdmin)
 admin.site.register(News)
 admin.site.register(HelpImage, HelpFormAdmin)
 admin.site.register(Collection)
-admin.site.register(PublicOffer)
+admin.site.register(PublicOffer, PublicOfferFormAdmin)
 admin.site.register(FirstFooter, FooterFormAdmin)
 admin.site.register(Order, OrderFormAdmin)

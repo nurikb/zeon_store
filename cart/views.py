@@ -11,7 +11,7 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from store.serializers import SimilarProductSerializer
-from cart.serializers import CartSerializer
+from cart.serializers import CartSerializer, ColorProductSerializer
 import random
 
 
@@ -49,14 +49,14 @@ class CartInfo(APIView):
     def get(self, request):
         cart = Cart(request)
         product = cart.get_full_cart()
-        cart_data = CartSerializer(product, many=True, context={'quantity': cart.cart}).data
+        cart_data = ColorProductSerializer(product[1], many=True, context={'quantity': cart.cart}).data
         price = cart.get_total_price()
         total_price = price['price']
         discount_price = price['discount_price']
         discount_sum = total_price - discount_price
-        count = cart.get_product_count(product)
+        count = cart.get_product_count(product[0])
         return Response({'product': cart_data, 'total_price': total_price, 'discount_price': discount_price,
-                         'discount_sum': discount_sum, 'product_count': count['total_count'],
+                         'discount_sum': discount_sum, 'total_count': count['total_count'],
                          'product_quantity': count['product_quantity']})
 
 

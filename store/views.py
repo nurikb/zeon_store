@@ -7,7 +7,8 @@ from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from store.models import (Product, Collection, News, AboutUs, Help, Client, Order, OrderDetail,
-                          PublicOffer, Slider, Advantage, CallBack, FavoriteProduct, Image, FirstFooter, SecondFooter)
+                          PublicOffer, Slider, Advantage, CallBack, FavoriteProduct, Image, FirstFooter, SecondFooter,
+                          HelpImage)
 from store.serializers import (ProductDetailSerializer, CollectionSerializer, NewsSerializer,
                                AboutUsSerializer, HelpSerializer, PublicOfferSerializer, SliderSerializer,
                                SimilarProductSerializer, MainPageSerializer, SearhcWithHintSerializer, FooterSerializer)
@@ -30,7 +31,14 @@ class CollectionAPIView(generics.ListAPIView):
     serializer_class = CollectionSerializer
 
 
-class CollectionProductsItem(generics.ListAPIView):
+class SerializerContext(generics.ListAPIView):
+
+    def get_serializer_context(self):
+        favorite = Favorite(self.request)
+        return {'favorite': favorite.favorite}
+
+
+class CollectionProductsItem(SerializerContext):
 
     """View для товаров в коллекции + новинки"""
 
@@ -49,9 +57,8 @@ class CollectionProductsItem(generics.ListAPIView):
         """переопределил list():добавил к отфильтрованным товарам "'Новинки'"""
 
         queryset = self.filter_queryset(self.get_queryset())
-        favorite = Favorite(request)
         new_product = Product.objects.filter(new=True)[:5]
-        new_product_ser = SimilarProductSerializer(new_product, many=True, context={'favorite': favorite.favorite}).data
+        new_product_ser = SimilarProductSerializer(new_product, many=True).data
 
         page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(page, many=True)
@@ -72,7 +79,7 @@ class AboutUsViewSet(APIView):
 
 class HelpViewSet(APIView):
     def get(self, request):
-        help_obj = Help.objects.all()
+        help_obj = HelpImage.objects.all()
         help_ser_data = HelpSerializer(help_obj, many=True).data
         return Response(help_ser_data)
 
@@ -84,12 +91,12 @@ class PublicOfferAPIView(APIView):
         return Response(p_offer_serializer)
 
 
-class MainPageTopSalesAPIView(generics.ListAPIView):
+class MainPageTopSalesAPIView(SerializerContext):
     queryset = Product.objects.filter(top_sales=True)
     serializer_class = SimilarProductSerializer
 
 
-class MainPageNewAPIView(generics.ListAPIView):
+class MainPageNewAPIView(SerializerContext):
     queryset = Product.objects.filter(new=True)
     serializer_class = SimilarProductSerializer
 

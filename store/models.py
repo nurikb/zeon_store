@@ -54,7 +54,7 @@ class Product(models.Model):
           null=True
      )
      quantity = models.IntegerField(null=True, verbose_name='количество')
-     size = models.CharField(max_length=10, null=True, verbose_name='размер')
+     size = models.CharField(max_length=10, null=True, verbose_name='размер', help_text="писать в формате: 40-60")
      substance = models.CharField(max_length=25, null=True, verbose_name='Состав ткани')
      material = models.CharField(max_length=100, null=True, verbose_name='материал')
      about_text = RichTextUploadingField('Описание товара', null=True, blank=True)
@@ -65,7 +65,10 @@ class Product(models.Model):
           # self.slug = slugify(self.name)
           if self.discount_percent:
                self.discount_price = self.price - (self.price/100) * self.discount_percent
-          # self.quantity =
+
+          size_list = self.size.split('-')
+          if len(size_list) == 2:
+               self.quantity = ((int(size_list[1]) - int(size_list[0])) / 2)+1
           super(Product, self).save(*args, **kwargs)
 
      def __str__(self):
@@ -166,7 +169,7 @@ class HelpImage(models.Model):
      image = models.ImageField(verbose_name='картина')
 
 
-class PublicOffer(models.Model):
+class     PublicOffer(models.Model):
 
      class Meta:
           verbose_name_plural = 'Публичный оффер'
