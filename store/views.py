@@ -1,24 +1,19 @@
-import random
-
 from django.contrib import auth
-from django.db.models import Q, Count
-from rest_framework import viewsets, generics, status
-from rest_framework.filters import SearchFilter
+from django.db.models import Q
+from rest_framework import  generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from cart.cart import Cart
-from store.models import (Product, Collection, News, AboutUs, Help, Client, Order, OrderDetail,
-                          PublicOffer, Slider, Advantage, CallBack, FavoriteProduct, Image, FirstFooter, SecondFooter,
-                          HelpImage)
-from store.serializers import (ProductDetailSerializer, CollectionSerializer, NewsSerializer,
-                               AboutUsSerializer, HelpSerializer, PublicOfferSerializer, SliderSerializer,
-                               SimilarProductSerializer, MainPageSerializer, SearhcWithHintSerializer, FooterSerializer)
+from store.models import (Product, Collection, Client, Order, OrderDetail, FavoriteProduct)
+from store.serializers import ProductDetailSerializer, CollectionSerializer, SimilarProductSerializer
 from cart.favorite import Favorite
 from cart.views import APIListPagination
 
 
-class ProductDetailAPIView(APIView):
+class ProductDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = ProductDetailSerializer
+
     def get(self, request, pk):
         product = Product.objects.get(id=pk)
         favorite = Favorite(request)
@@ -33,14 +28,7 @@ class CollectionAPIView(generics.ListAPIView):
     serializer_class = CollectionSerializer
 
 
-class SerializerContext(generics.ListAPIView):
-
-    def get_serializer_context(self):
-        favorite = Favorite(self.request)
-        return {'favorite': favorite.favorite}
-
-
-class CollectionProductsItem(SerializerContext):
+class CollectionProductsItem(generics.ListAPIView):
 
     """View для товаров в коллекции + новинки"""
 
@@ -54,6 +42,10 @@ class CollectionProductsItem(SerializerContext):
 
         return self.queryset.filter(collection__id=self.kwargs['pk'])
 
+    def get_serializer_context(self):
+        favorite = Favorite(self.request)
+        return {'favorite': favorite.favorite}
+
     def list(self, request, *args, **kwargs):
 
         """переопределил list():добавил к отфильтрованным товарам "'Новинки'"""
@@ -65,75 +57,6 @@ class CollectionProductsItem(SerializerContext):
         page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response({'collection_product': serializer.data, 'new_product': new_product_ser})
-
-
-class NewsAPIView(generics.ListAPIView):
-    queryset = News.objects.all()
-    serializer_class = NewsSerializer
-
-
-class AboutUsViewSet(generics.ListAPIView):
-    serializer_class = AboutUsSerializer
-
-    def get(self, request):
-        about_us = AboutUs.objects.all().first()
-        about_us_data = AboutUsSerializer(about_us).data
-        return Response(about_us_data)
-
-
-class HelpViewSet(generics.ListAPIView):
-    serializer_class = HelpSerializer
-
-    def get(self, request):
-        help_obj = HelpImage.objects.all()
-        help_ser_data = HelpSerializer(help_obj, many=True).data
-        return Response(help_ser_data)
-
-
-class PublicOfferAPIView(generics.ListAPIView):
-    serializer_class = PublicOfferSerializer
-
-    def get(self, request):
-        p_offer = PublicOffer.objects.all().first()
-        p_offer_serializer = PublicOfferSerializer(p_offer).data
-        return Response(p_offer_serializer)
-
-
-class MainPageTopSalesAPIView(SerializerContext):
-    queryset = Product.objects.filter(top_sales=True)
-    serializer_class = SimilarProductSerializer
-
-
-class MainPageNewAPIView(SerializerContext):
-    queryset = Product.objects.filter(new=True)
-    serializer_class = SimilarProductSerializer
-
-
-class MainPageAdvantageAPIView(generics.ListAPIView):
-    queryset = Advantage.objects.all()
-    serializer_class = MainPageSerializer
-
-
-class FooterAPIView(generics.ListAPIView):
-    queryset = FirstFooter.objects.all()
-    serializer_class = FooterSerializer
-
-
-class CallBackAPIView(generics.ListAPIView):
-
-    """View для 'Обратного звонка'"""
-
-    def post(self, request):
-
-        name = request.data.get('name')
-        phone = request.data.get('phone')
-        type = request.data.get('callback_type')
-        callback = CallBack(name=name, phone_number=phone, callback_type=type)
-        try:
-            callback.save()
-            return Response({'success': True})
-        except:
-            return Response({'success': False})
 
 
 class FavoriteProductAPIView(APIView):

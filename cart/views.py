@@ -53,7 +53,9 @@ class CartClear(APIView):
         return Response({'success': True})
 
 
-class CartInfo(APIView):
+class CartInfo(generics.RetrieveAPIView):
+    serializer_class = ColorProductSerializer
+
     def get(self, request):
         cart = Cart(request)
         product = cart.get_full_cart()

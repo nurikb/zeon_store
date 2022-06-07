@@ -1,13 +1,9 @@
-from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.contrib import admin
-from fieldsets_with_inlines import FieldsetsInlineMixin
 
-
-from store.models import (Product, Collection, News, Image, AboutUsImage, AboutUs, Help, PublicOffer, Order, Client,
-                          OrderDetail, Advantage, Slider, HelpImage, CallBack, FirstFooter, SecondFooter)
-from store.forms import ProductForm, SvgImageForm
+from store.models import (Product, Collection, Image, Order, Client, OrderDetail)
+from store.forms import ProductForm
 
 
 class ProductImageInline(admin.StackedInline):
@@ -39,30 +35,6 @@ class ProductFormAdmin(admin.ModelAdmin):
     )
     search_fields = ('name', 'category')
     list_display = ('name', 'collection_id')
-
-
-class AdvantageFormAdmin(admin.ModelAdmin):
-    model = Advantage
-    form = SvgImageForm
-    fields = ('icon','title', 'text')
-
-
-class HelpInline(admin.StackedInline):
-    model = Help
-    extra = 0
-    fields = ('question', 'answer')
-
-
-class HelpFormAdmin(admin.ModelAdmin):
-    model = HelpImage
-    inlines = (HelpInline,)
-    fields = ('image',)
-
-
-class CallBackFormAdmin(admin.ModelAdmin):
-    model = CallBack
-    fields = ('name', 'phone_number', 'callback_type', 'contacted', 'date')
-    readonly_fields = ('date',)
 
 
 class OrderDetailInline(admin.StackedInline):
@@ -120,51 +92,6 @@ class OrderFormAdmin(admin.ModelAdmin):
     fields = ('product_quantity', 'total_quantity', 'discount_sum', 'discount_price', 'total_price',)
 
 
-class SecondFooterInline(admin.StackedInline):
-    model = SecondFooter
-    extra = 0
-
-
-class FooterFormAdmin(admin.ModelAdmin):
-    model = FirstFooter
-    inlines = (SecondFooterInline,)
-
-
-class HasAddPermission(admin.ModelAdmin):
-    def has_add_permission(self, request):
-        """Лимит на создание обьектов модели"""
-        num_objects = self.model.objects.count()
-        if num_objects >= 1:
-            return False
-        else:
-            return True
-
-
-class AboutUsImageInline(admin.StackedInline):
-    max_num = 3
-    extra = 0
-    model = AboutUsImage
-    fields = ('image',)
-
-
-class AboutUsFormAdmin(HasAddPermission):
-    model = AboutUs
-    inlines = (AboutUsImageInline,)
-    list_display = ('title', 'text')
-
-
-class PublicOfferFormAdmin(HasAddPermission):
-    model = PublicOffer
-
-
-admin.site.register(AboutUs, AboutUsFormAdmin)
-admin.site.register(Advantage, AdvantageFormAdmin)
 admin.site.register(Product, ProductFormAdmin)
-admin.site.register(Slider)
-admin.site.register(CallBack, CallBackFormAdmin)
-admin.site.register(News)
-admin.site.register(HelpImage, HelpFormAdmin)
 admin.site.register(Collection)
-admin.site.register(PublicOffer, PublicOfferFormAdmin)
-admin.site.register(FirstFooter, FooterFormAdmin)
 admin.site.register(Order, OrderFormAdmin)
