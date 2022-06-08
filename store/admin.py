@@ -70,6 +70,9 @@ class OrderDetailInline(admin.StackedInline):
     price.short_description = 'цена'
     discount_price.short_description = 'цена со скидкой'
 
+    def has_add_permission(self, request, obj):
+        return False
+
 
 class ClientInline(admin.StackedInline):
     model = Client
@@ -82,7 +85,10 @@ class ClientInline(admin.StackedInline):
                         'date',
                         'status')}),
     )
-    readonly_fields = ('date',)
+    readonly_fields = ('date', 'surname', 'name', 'country', 'city', 'email')
+
+    def has_add_permission(self, request, obj):
+        return False
 
 
 class OrderFormAdmin(admin.ModelAdmin):

@@ -22,7 +22,7 @@ class Cart(object):
                                      'product_quantity': product.quantity,
                                      'color_quantity': {color: 0},
                                      'price': str(product.price),
-                                     'discount_price': str(product.discount_price),
+                                     'discount_price': str(product.discount_price) if product.discount_percent else 0,
                                      'color_id': color}
         if update_quantity:
             self.cart[product_id]['color_quantity'][color] = quantity
@@ -42,10 +42,19 @@ class Cart(object):
         self.session.modified = True
 
         # Удаление товара из корзины
-    def remove(self, product):
+    def remove(self, product, color, decrease):
         product_id = str(product.id)
         if product_id in self.cart:
-            del self.cart[product_id]
+            if not decrease or self.cart[product_id]['color_quantity'][color] < 2:
+                del self.cart[product_id]['color_quantity'][color]
+            else:
+                self.cart[product_id]['color_quantity'][color] -= 1
+            self.save()
+
+    def color_decrease(self, product, color):
+        product_id = str(product.id)
+        if product_id in self.cart:
+            self.cart[product_id]['color_quantity'][color] -= 1
             self.save()
 
 
@@ -66,8 +75,8 @@ class Cart(object):
         return sum(sum((item['color_quantity'].values())) for item in self.cart.values())
 
     def get_total_price(self):
-        price = sum(int(item['price'])*(sum((item['color_quantity'].values())) * item['product_quantity']) for item in self.cart.values())
-        discount_price = sum(int(item['discount_price'])*(sum((item['color_quantity'].values())) * item['product_quantity']) for item in self.cart.values())
+        price = sum(int(item['price'])*(sum((item['color_quantity'].values()))) for item in self.cart.values())
+        discount_price = sum(int(item['discount_price'])*(sum((item['color_quantity'].values()))) for item in self.cart.values())
         return {'price': price, 'discount_price': discount_price}
 
     def get_full_cart(self):

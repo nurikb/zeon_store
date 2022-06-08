@@ -42,7 +42,10 @@ class CartRemove(APIView):
     def post(self, request, pk):
         cart = Cart(request)
         product = get_object_or_404(Product, id=pk)
-        cart.remove(product)
+        color = request.data.get('color')
+        decrease = request.data.get('decrease')
+        color = get_object_or_404(Image, color=color, product=product).id
+        cart.remove(product, str(color), decrease=decrease)
         return Response({'success': True})
 
 
@@ -53,7 +56,7 @@ class CartClear(APIView):
         return Response({'success': True})
 
 
-class CartInfo(generics.RetrieveAPIView):
+class CartInfo(generics.ListAPIView):
     serializer_class = ColorProductSerializer
 
     def get(self, request):
@@ -65,6 +68,7 @@ class CartInfo(generics.RetrieveAPIView):
         discount_price = price['discount_price']
         discount_sum = total_price - discount_price
         count = cart.get_product_count(product[0])
+        print(cart.cart)
         return Response({'product': cart_data, 'total_price': total_price, 'discount_price': discount_price,
                          'discount_sum': discount_sum, 'total_count': count['total_count'],
                          'product_quantity': count['product_quantity']})

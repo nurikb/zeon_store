@@ -44,7 +44,7 @@ class Product(models.Model):
      price = models.IntegerField(verbose_name='цена')
      article = models.CharField(max_length=100, null=True, verbose_name='артикул')
      discount_price = models.IntegerField(null=True, blank=True, verbose_name='цена со скидкой')
-     discount_percent = models.IntegerField(null=True, verbose_name='скидка')
+     discount_percent = models.IntegerField(null=True, blank=True, verbose_name='скидка')
      slug = models.SlugField(unique=True, null=True, blank=True)
      collection = models.ForeignKey(
           Collection,
@@ -67,6 +67,7 @@ class Product(models.Model):
                self.discount_price = self.price - (self.price/100) * self.discount_percent
           else:
                self.discount_price = None
+               self.discount_percent = 0
 
           size_list = self.size.split('-')
           if len(size_list) == 2:
@@ -78,11 +79,19 @@ class Product(models.Model):
 
 
 class Order(models.Model):
+     class Meta:
+          verbose_name_plural = 'Заказы'
+          verbose_name = 'Заказы'
+
      product_quantity = models.IntegerField(null=True, verbose_name='количество линеек')
      total_quantity = models.IntegerField(null=True, verbose_name='количество товаров')
      discount_sum = models.IntegerField(null=True, verbose_name='скидка')
      discount_price = models.IntegerField(null=True, verbose_name='итого к оплате')
      total_price = models.IntegerField(null=True, verbose_name='стоимость')
+
+     def __str__(self):
+          print(self.order_client)
+          return 'dfasdf'
 
 
 class OrderDetail(models.Model):
@@ -114,7 +123,7 @@ class Client(models.Model):
      country = models.CharField(max_length=100, verbose_name='страна')
      city = models.CharField(max_length=100, verbose_name='город')
      email = models.EmailField(verbose_name='эл. почта')
-     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True)
+     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, related_name='order_client')
      date = models.DateField(auto_now_add=True, verbose_name='дата оформления')
      status = models.CharField(choices=status_choice, max_length=20, default='Новый', verbose_name='статус')
 
