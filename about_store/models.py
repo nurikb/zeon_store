@@ -136,5 +136,5 @@ class SecondFooter(models.Model):
 
      def save(self, *args, **kwargs):
           if self.type == 'whatsapp':
-               self.link = 'https://wa.me/'+''.join(re.findall(r'\d' ,self.type))
+               self.link = 'https://wa.me/'+''.join(re.findall(r'\d' ,self.link))
           super(SecondFooter, self).save(*args, **kwargs)
