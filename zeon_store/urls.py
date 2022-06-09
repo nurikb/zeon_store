@@ -13,24 +13,21 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.urls import path, include, re_path
+from django.urls import path, include
 from django.contrib import admin
 from django.conf.urls.static import static
 from django.conf import settings
 from rest_framework.schemas import get_schema_view
-from django.views.generic import TemplateView
+from zeon_store.swagger import urlpatterns
 
 urlpatterns = [
     path('api_schema', get_schema_view(title='API Schema', description='Guide for the REST API'), name='api_schema'),
-    path('docs/', TemplateView.as_view(
-        template_name='docs.html',
-        extra_context={'schema_url':'api_schema'}
-        ), name='swagger-ui'),
     path('admin/', admin.site.urls),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('api/v1/', include('store.urls')),
     path('api/v1/', include('cart.urls')),
-    # path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    # path('api/auth/', include('djoser.urls')),
-    # re_path(r'^auth/', include('djoser.urls.authtoken')),
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('api/v1/', include('about_store.urls')),
+        # path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+        # path('api/auth/', include('djoser.urls')),
+        # re_path(r'^auth/', include('djoser.urls.authtoken')),
+]+urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
