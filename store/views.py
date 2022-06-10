@@ -82,17 +82,21 @@ class OrderAPIView(APIView):
         cart_count = cart.get_product_count(products[0])
 
         try:
-            order = Order(total_quantity=cart_count['total_count'], total_price=total_price,
-                          discount_price=discount_price, discount_sum=discount_sum, product_quantity=cart_count['product_quantity'])
-            order.save()
-
-            client = Client(name=name, surname=surname, country=country, city=city, email=email, order=order)
+            client = Client(name=name, surname=surname, country=country, city=city, email=email)
             client.save()
+
+            order = Order(total_quantity=cart_count['total_count'], total_price=total_price,
+                          discount_price=discount_price, discount_sum=discount_sum,
+                          product_quantity=cart_count['product_quantity'], client=client)
+            order.save()
 
             for product_id, product_data in cart.cart.items():
                 for color, quantity in product_data['color_quantity'].items():
-                    order_detail = OrderDetail(order=order, product_id=int(product_id), quantity=quantity, product_image_id=int(color))
+                    order_detail = OrderDetail(order=order, product_id=int(product_id),
+                                               quantity=quantity, product_image_id=int(color))
                     order_detail.save()
+                    print(order_detail)
+            # cart.clear()
             return Response({'success': True})
         except Exception as e:
             order.delete()

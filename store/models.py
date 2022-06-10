@@ -88,10 +88,10 @@ class Order(models.Model):
      discount_sum = models.IntegerField(null=True, verbose_name='скидка')
      discount_price = models.IntegerField(null=True, verbose_name='итого к оплате')
      total_price = models.IntegerField(null=True, verbose_name='стоимость')
+     client = models.ForeignKey('Client', on_delete=models.CASCADE, null=True)
 
-     def __str__(self):
-          print(self.order_client)
-          return 'dfasdf'
+     # def __str__(self):
+     #
 
 
 class OrderDetail(models.Model):
@@ -123,7 +123,7 @@ class Client(models.Model):
      country = models.CharField(max_length=100, verbose_name='страна')
      city = models.CharField(max_length=100, verbose_name='город')
      email = models.EmailField(verbose_name='эл. почта')
-     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, related_name='order_client')
+     # order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, related_name='order_client')
      date = models.DateField(auto_now_add=True, verbose_name='дата оформления')
      status = models.CharField(choices=status_choice, max_length=20, default='Новый', verbose_name='статус')
 

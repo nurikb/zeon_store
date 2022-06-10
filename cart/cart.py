@@ -51,13 +51,6 @@ class Cart(object):
                 self.cart[product_id]['color_quantity'][color] -= 1
             self.save()
 
-    def color_decrease(self, product, color):
-        product_id = str(product.id)
-        if product_id in self.cart:
-            self.cart[product_id]['color_quantity'][color] -= 1
-            self.save()
-
-
     # Итерация по товарам
     def __iter__(self):
         product_ids = self.cart.keys()

@@ -1,6 +1,8 @@
+from django.contrib.admin import TabularInline, StackedInline
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.contrib import admin
+from super_inlines.admin import SuperInlineModelAdmin, SuperModelAdmin
 
 from store.models import (Product, Collection, Image, Order, Client, OrderDetail)
 from store.forms import ProductForm
@@ -37,9 +39,14 @@ class ProductFormAdmin(admin.ModelAdmin):
     list_display = ('name', 'collection_id')
 
 
-class OrderDetailInline(admin.StackedInline):
+class OrderDetailInline(SuperInlineModelAdmin, TabularInline):
+    def discount_price_tag(self, obj):
+        if obj.discount_price:
+            return True
+        return False
     model = OrderDetail
     extra = 0
+    max_num = 0
     fieldsets = (
         ('Товар', {'fields': (
             ('product', 'color', 'product_image_tag'),
@@ -65,18 +72,32 @@ class OrderDetailInline(admin.StackedInline):
         """Отображение размера в админ панели"""
         return obj.product.size
 
+    def has_delete_permission(self, request, obj):
+        return False
+
     product_image_tag.short_description = 'Image'
     size.short_description = 'размерный ряд'
     price.short_description = 'цена'
     discount_price.short_description = 'цена со скидкой'
 
-    def has_add_permission(self, request, obj):
+
+class OrderFormAdmin(SuperInlineModelAdmin, StackedInline):
+    model = Order
+    inlines = (OrderDetailInline,)
+    extra = 0
+    max_num = 0
+    fields = ('product_quantity', 'total_quantity', 'discount_sum', 'discount_price', 'total_price',)
+    readonly_fields = ('product_quantity', 'total_quantity', 'discount_sum', 'discount_price', 'total_price',)
+
+    def has_delete_permission(self, request, obj):
         return False
 
 
-class ClientInline(admin.StackedInline):
+class ClientFormAdmin(SuperModelAdmin):
     model = Client
+    inlines = (OrderFormAdmin,)
     extra = 0
+    search_fields = ('name', 'email', 'status')
     fieldsets = (
         ('Клиент', {'fields': (
                         ('surname', 'name',),
@@ -87,17 +108,7 @@ class ClientInline(admin.StackedInline):
     )
     readonly_fields = ('date', 'surname', 'name', 'country', 'city', 'email')
 
-    def has_add_permission(self, request, obj):
-        return False
-
-
-class OrderFormAdmin(admin.ModelAdmin):
-    model = Order
-    inlines = (ClientInline, OrderDetailInline)
-    extra = 0
-    fields = ('product_quantity', 'total_quantity', 'discount_sum', 'discount_price', 'total_price',)
-
 
 admin.site.register(Product, ProductFormAdmin)
 admin.site.register(Collection)
-admin.site.register(Order, OrderFormAdmin)
+admin.site.register(Client, ClientFormAdmin)

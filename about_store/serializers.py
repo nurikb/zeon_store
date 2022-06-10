@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from about_store.models import (News, AboutUs, AboutUsImage, Help, HelpImage, PublicOffer, Slider, Advantage,
-                                SecondFooter, FirstFooter)
+                                SecondFooter, FirstFooter, CallBack)
 
 
 class NewsSerializer(serializers.ModelSerializer):
@@ -77,7 +77,7 @@ class MainPageSerializer(serializers.ModelSerializer):
 class NumberSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecondFooter
-        fields = ('link',)
+        fields = ('link', 'type')
 
 
 class FooterSerializer(serializers.ModelSerializer):
@@ -91,3 +91,9 @@ class FooterSerializer(serializers.ModelSerializer):
         number = SecondFooter.objects.filter(footer=obj)
         number_data = NumberSerializer(instance=number, many=True)
         return number_data.data
+
+
+class CallbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CallBack
+        fields = ('name', 'phone_number', 'callback_type')

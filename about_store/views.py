@@ -1,5 +1,5 @@
 from django.core.paginator import InvalidPage
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination, CursorPagination
 from rest_framework.response import Response
@@ -8,7 +8,7 @@ from about_store.models import (News, AboutUs, HelpImage, PublicOffer, Advantage
 from cart.favorite import Favorite
 from store.models import Product
 from about_store.serializers import (NewsSerializer, AboutUsSerializer, HelpSerializer, PublicOfferSerializer,
-                                     MainPageSerializer, FooterSerializer)
+                                     MainPageSerializer, FooterSerializer, CallbackSerializer)
 from store.serializers import SimilarProductSerializer
 
 
@@ -85,19 +85,7 @@ class FooterAPIView(generics.ListAPIView):
     serializer_class = FooterSerializer
 
 
-class CallBackAPIView(generics.ListAPIView):
-
+class CallBackAPIView(generics.CreateAPIView):
     """API для 'Обратного звонка'"""
-
-    def post(self, request):
-
-        name = request.data.get('name')
-        phone = request.data.get('phone')
-        type = request.data.get('callback_type')
-        callback = CallBack(name=name, phone_number=phone, callback_type=type)
-        try:
-            callback.save()
-            return Response({'success': True})
-        except:
-            return Response({'success': False})
-
+    serializer_class = CallbackSerializer
+    model = CallBack

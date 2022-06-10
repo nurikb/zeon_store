@@ -36,6 +36,11 @@ class News(models.Model):
 
 
 class Help(models.Model):
+
+     class Meta:
+          verbose_name_plural = 'Вопросы и ответы'
+          verbose_name = 'Вопросы и ответы'
+
      question = models.TextField(verbose_name='вопрос')
      answer = models.TextField(verbose_name='ответ')
      image = models.ForeignKey('HelpImage', on_delete=models.DO_NOTHING, null=True)
@@ -85,7 +90,7 @@ class Slider(models.Model):
           verbose_name = 'Слайдер'
 
      image = models.ImageField(verbose_name='картинка')
-     link = models.CharField(max_length=150, null=True, verbose_name='ссылка')
+     link = models.CharField(max_length=150, null=True, blank=True, verbose_name='ссылка')
      active = models.BooleanField(default=True, verbose_name='показывать на сайте?')
 
 

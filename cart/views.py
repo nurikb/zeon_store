@@ -68,7 +68,6 @@ class CartInfo(generics.ListAPIView):
         discount_price = price['discount_price']
         discount_sum = total_price - discount_price
         count = cart.get_product_count(product[0])
-        print(cart.cart)
         return Response({'product': cart_data, 'total_price': total_price, 'discount_price': discount_price,
                          'discount_sum': discount_sum, 'total_count': count['total_count'],
                          'product_quantity': count['product_quantity']})

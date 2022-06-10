@@ -31,6 +31,9 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'super_inlines',
+    # 'jet.dashboard',
+    # 'jet',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -117,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
 
@@ -224,3 +227,10 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 CART_SESSION_ID = 'cart'
 FAVORITE_SESSION_ID = 'favorite'
+
+
+# JET_SIDE_MENU_ITEMS = [  # A list of application or custom item dicts
+#     {'about_store': 'информация о сайте', 'app_label': 'about_store', 'url': '', 'items': []},
+#     ]
+
+
